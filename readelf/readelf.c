@@ -52,8 +52,8 @@ int readelf(u_char *binary, int size)
         Elf32_Shdr *shdr = NULL;
 
         u_char *ptr_sh_table = NULL;
-        Elf32_Half sh_entry_count;
-        Elf32_Half sh_entry_size;
+        Elf32_Half sh_entry_count = ehdr->e_shnum;
+        Elf32_Half sh_entry_size = ehdr->e_shentsize;
 
 
         // check whether `binary` is a ELF file.
@@ -61,7 +61,13 @@ int readelf(u_char *binary, int size)
                 printf("not a standard elf format\n");
                 return 0;
         }
-
+	else {
+		shdr = ((u_char *)ehdr + ehdr->e_shoff);
+		for (Nr = 0; Nr < sh_entry_count; Nr++) {
+			printf("%d:0x%x\n", Nr, shdr->sh_addr);
+			shdr = ((u_char *)shdr + sh_entry_size);
+		}
+	}
         // get section table addr, section header number and section header size.
 
         // for each section header, output section number and section addr. 
