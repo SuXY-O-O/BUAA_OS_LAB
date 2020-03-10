@@ -63,26 +63,91 @@ lp_Print(void (*output)(void *, char *, int),
     */
 
     for(;;) {
+	// initial
+	longFlag = 0;
+	width = 0;
+	prec = 0;
+	ladjust = 0;
+	padc = ' ';
+	length = 0;
 
-        /* Part1: your code here */
-
+       //break if find '\0'
+	if (*fmt == '\0')
+	{
+		break;
+	}
+	
+	//loop untile find '%'
+	for(;;)
 	{ 
 	    /* scan for the next '%' */
+		//if find \0, output and return
+		if(*fmt == '\0') 
+		{
+			buf[length] = '\0';
+			length++;
+			OUTPUT(arg, buf, length);
+			return;
+		}
+		//if not find %, store and find next
+		else if(*fmt != '%')
+		{
+			buf[length] = *fmt;
+			length++;
+			fmt++;
+		}
+		//if find %, output and out of loop
+		else
+		{
+			OUTPUT(arg, buf, length);
+			break;
+		}
 	    /* flush the string found so far */
 
 	    /* check "are we hitting the end?" */
 	}
+	/* now we found a '%' at fmt */
+	fmt++;
+	/* check for flag */
+	if(*fmt == '-') 
+	{
+		ladjust = 1;
+		fmt++;
+	}
+	else if(*fmt == '0')
+	{
+		padc = '0';
+		fmt++;
+	}
 
-	
-	/* we found a '%' */
-	
-	/* check for long */
+	/* check for width */
+	length = 0;
+	while(IsDigit(*fmt))
+	{
+		length = length * 10 + Ctod(*fmt);
+		fmt++;
+	}
 
-	/* check for other prefixes */
+	// check for precision
+	prec = 0;
+	if(*fmt == '.')
+	{
+		fmt++;
+		while(IsDigit(*fmt))
+		{
+			prec = prec * 10 + Ctod(*fmt);
+			fmt++;
+		}
+	}
+
+	// check for long
+	if(*fmt == 'l')
+	{
+		longFlag = 1;
+		fmt++;
+	}
 
 	/* check format flag */
-	
-
 	negFlag = 0;
 	switch (*fmt) {
 	 case 'b':
@@ -102,14 +167,20 @@ lp_Print(void (*output)(void *, char *, int),
 	    } else { 
 		num = va_arg(ap, int); 
 	    }
-	    
+		// check negFlag
+	    if (num < 0)
+	    {
+		negFlag = 1;
+	    }
+	  	// output
+	    length = PrintNum(buf, num, 10, 0, width, ladjust, padc, negFlag);
+	    OUTPUT(arg, buf, length);
+	    break;
 		/*  Part2:
 			your code here.
 			Refer to other part (case 'b',case 'o' etc.) and func PrintNum to complete this part.
 			Think the difference between case 'd' and others. (hint: negFlag).
 		*/
-	    
-		break;
 
 	 case 'o':
 	 case 'O':
@@ -172,10 +243,10 @@ lp_Print(void (*output)(void *, char *, int),
 	 default:
 	    /* output this char as it is */
 	    OUTPUT(arg, fmt, 1);
-	}	/* switch (*fmt) */
+	}	/* switch (*fmt) end */
 
 	fmt ++;
-    }		/* for(;;) */
+    }		/* for(;;) end */
 
     /* special termination call */
     OUTPUT(arg, "\0", 1);
