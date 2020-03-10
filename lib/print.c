@@ -108,6 +108,7 @@ lp_Print(void (*output)(void *, char *, int),
 	}
 	/* now we found a '%' at fmt */
 	fmt++;
+	length = 0;
 	/* check for flag */
 	if(*fmt == '-') 
 	{
@@ -121,10 +122,9 @@ lp_Print(void (*output)(void *, char *, int),
 	}
 
 	/* check for width */
-	length = 0;
 	while(IsDigit(*fmt))
 	{
-		length = length * 10 + Ctod(*fmt);
+		width = width * 10 + Ctod(*fmt);
 		fmt++;
 	}
 
