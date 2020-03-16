@@ -6,6 +6,21 @@
 
 #include "kerelf.h"
 #include <stdio.h>
+
+/* Function for turning big ending to small ending */
+// 16bits
+#define BSWAP_16(x) \
+    (uint16_t)((((uint16_t)(x) & 0x00ff) << 8) | \
+              (((uint16_t)(x) & 0xff00) >> 8) \
+             )  
+// 32bits
+#define BSWAP_32(x) \
+    (uint32_t)((((uint32_t)(x) & 0xff000000) >> 24) | \
+              (((uint32_t)(x) & 0x00ff0000) >> 8) | \
+              (((uint32_t)(x) & 0x0000ff00) << 8) | \
+              (((uint32_t)(x) & 0x000000ff) << 24) \
+             )
+
 /* Overview:
  *   Check whether it is a ELF file.
  *

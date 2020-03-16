@@ -145,19 +145,6 @@ typedef struct {
 #define PF_R            (1 << 2)        /* Segment is readable */
 #define PF_MASKPROC     0xf0000000      /* Processor-specific */
 
-/* Functions for translating big-ending to small-ending. */
-
-#define BSWAP_16(x) \
-    (uint16_t)((((uint16_t)(x) & 0x00ff) << 8) | \
-              (((uint16_t)(x) & 0xff00) >> 8) \
-             )   // For 16bits
-
-#define BSWAP_32(x) \
-    (uint32_t)((((uint32_t)(x) & 0xff000000) >> 24) | \
-              (((uint32_t)(x) & 0x00ff0000) >> 8) | \
-              (((uint32_t)(x) & 0x0000ff00) << 8) | \
-              (((uint32_t)(x) & 0x000000ff) << 24) \
-             )  // For 32bits
 
 int readelf(u_char *binary,int size);
 
