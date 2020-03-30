@@ -59,6 +59,12 @@ static void *alloc(u_int n, u_int align, int clear)
 
     /* Step 2: Save current value of `freemem` as allocated chunk. */
     alloced_mem = freemem - align;
+    
+    // We're out of memory, PANIC !!
+    if (PADDR(alloced_mem) < 0) {
+        panic("out of memorty\n");
+        return (void *)-E_NO_MEM;
+    }
 
     /* Step 3: Increase `freemem` to record allocation. */
     freemem = freemem - n;
@@ -68,11 +74,7 @@ static void *alloc(u_int n, u_int align, int clear)
         bzero((void *)alloced_mem, n);
     }
 
-    // We're out of memory, PANIC !!
-    if (PADDR(freemem) <= 0) {
-        panic("out of memorty\n");
-        return (void *)-E_NO_MEM;
-    }
+    
 
     /* Step 5: return allocated chunk. */
     return (void *)alloced_mem;
