@@ -86,7 +86,8 @@ void mips_detect_memory();
 void mips_vm_init();
 
 void mips_init();
-void page_init(void);
+void page_init(int mode);
+void get_page_status(int pa);
 void page_check();
 void physical_memory_manage_check();
 int page_alloc(struct Page **pp);

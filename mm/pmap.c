@@ -108,13 +108,13 @@ static Pte *boot_pgdir_walk(Pde *pgdir, u_long va, int create)
 }
 
 /*Overview:
- 	Map [va, va+size) of virtual address space to physical [pa, pa+size) in the page
-	table rooted at pgdir.
-	Use permission bits `perm|PTE_V` for the entries.
- 	Use permission bits `perm` for the entries.
+        Map [va, va+size) of virtual address space to physical [pa, pa+size) in the page
+        table rooted at pgdir.
+        Use permission bits `perm|PTE_V` for the entries.
+        Use permission bits `perm` for the entries.
 
   Pre-Condition:
-	Size is a multiple of BY2PG.*/
+        Size is a multiple of BY2PG.*/
 void boot_map_segment(Pde *pgdir, u_long va, u_long size, u_long pa, int perm)
 {
     int i, va_temp;
@@ -177,7 +177,7 @@ void mips_vm_init()
   Hint:
 	Use `LIST_INSERT_HEAD` to insert something to list.*/
 void
-page_init(void)
+page_init(int mode)
 {
     /* Step 1: Initialize page_free_list. */
     /* Hint: Use macro `LIST_INIT` defined in include/queue.h. */
@@ -196,32 +196,74 @@ page_init(void)
         pages[i].pp_ref = 1;
     }
     /* Step 4: Mark the other memory as free. */
-    for (; i < npage; i++)
+    /* mode == 0 : BIG2SMALL mode != 0 : SMALL2BIG */
+    if (mode == 0) 
     {
-	pages[i].pp_ref = 0;
-        LIST_INSERT_HEAD(&page_free_list, (pages + i), pp_link);
+        for (; i < npage; i++)
+        {
+            pages[i].pp_ref = 0;
+            LIST_INSERT_HEAD(&page_free_list, (pages + i), pp_link);
+        }
+    }
+    else 
+    {
+        for (; i < npage; i++)
+        {
+            pages[i].pp_ref = 0;
+            LIST_INSERT_TAIL(&page_free_list, (pages + i), pp_link);
+        }
     }
 }
 
+/* lab2-extra check the use of page */
+static int status_count = 0;
+void
+get_page_status(int pa)
+{
+    status_count++;
+    struct Page *search = pa2page(pa);
+    int status = 0;
+    struct Page *tmp;
+    LIST_FOREACH(tmp, &page_free_list, pp_link)
+    {
+        if (tmp == search) 
+        {
+            status = 1;
+        }
+    }
+    if (status != 1)
+    {
+        if (search->pp_ref == 0)
+        {
+            status = 2;
+        }
+        else 
+        {
+            status = 3;
+        }
+    }
+    printf("times:%d,page status:%d\n", status_count, status);
+}
+
 /*Overview:
-	Allocates a physical page from free memory, and clear this page.
+        Allocates a physical page from free memory, and clear this page.
 
   Post-Condition:
-	If failed to allocate a new page(out of memory(there's no free page)),
- 	return -E_NO_MEM.
-	Else, set the address of allocated page to *pp, and returned 0.
+        If failed to allocate a new page(out of memory(there's no free page)),
+        return -E_NO_MEM.
+        Else, set the address of allocated page to *pp, and returned 0.
 
   Note:
- 	Does NOT increment the reference count of the page - the caller must do
- 	these if necessary (either explicitly or via page_insert).
+        Does NOT increment the reference count of the page - the caller must do
+        these if necessary (either explicitly or via page_insert).
 
   Hint:
-	Use LIST_FIRST and LIST_REMOVE defined in include/queue.h .*/
+        Use LIST_FIRST and LIST_REMOVE defined in include/queue.h .*/
 int
 page_alloc(struct Page **pp)
 {
     struct Page *ppage_temp;
-
+ 
     /* Step 1: Get a page from free memory. If fails, return the error code.*/
     if (LIST_EMPTY(&page_free_list))
     {
