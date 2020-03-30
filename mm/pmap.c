@@ -177,6 +177,7 @@ void mips_vm_init()
 void
 page_init(int mode)
 {
+    printf("init page called\n");
     /* Step 1: Initialize page_free_list. */
     /* Hint: Use macro `LIST_INIT` defined in include/queue.h. */
     LIST_INIT(&page_free_list);
@@ -189,28 +190,40 @@ page_init(int mode)
     {
         if (page2pa(pages + i) >= PADDR(freemem))
         {
-            break;
+	    pages[i].pp_ref = 1;
         }
-        pages[i].pp_ref = 1;
+        else
+	{
+	    pages[i].pp_ref = 0;
+	    if (mode == 0)
+	    {
+		LIST_INSERT_HEAD(&page_free_list, (pages + i), pp_link);
+	    }
+	    else
+	    {
+		LIST_INSERT_TAIL(&page_free_list, (pages + i), pp_link);
+	    }
+	}
     }
     /* Step 4: Mark the other memory as free. */
     /* mode == 0 : BIG2SMALL mode != 0 : SMALL2BIG */
-    if (mode == 0) 
-    {
-        for (; i < npage; i++)
-        {
-            pages[i].pp_ref = 0;
-            LIST_INSERT_HEAD(&page_free_list, (pages + i), pp_link);
-        }
-    }
-    else 
-    {
-        for (; i < npage; i++)
-        {
-            pages[i].pp_ref = 0;
-            LIST_INSERT_TAIL(&page_free_list, (pages + i), pp_link);
-        }
-    }
+    //if (mode == 0) 
+    //{
+    //    for (; i < npage; i++)
+    //    {
+    //	    printf("I'm at 200");
+    //        pages[i].pp_ref = 0;
+    //        LIST_INSERT_HEAD(&page_free_list, (pages + i), pp_link);
+    //    }
+    //}
+    //else 
+    //{
+    //    for (; i < npage; i++)
+    //    {
+    //        pages[i].pp_ref = 0;
+    //        LIST_INSERT_TAIL(&page_free_list, (pages + i), pp_link);
+    //    }
+    //}
 }
 
 /* lab2-extra check the use of page */
