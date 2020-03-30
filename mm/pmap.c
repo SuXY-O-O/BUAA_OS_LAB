@@ -48,31 +48,29 @@ static void *alloc(u_int n, u_int align, int clear)
     extern char end[];
     u_long alloced_mem;
 
-    /* Initialize `freemem` if this is the first time. The first virtual address that the
+    /* Initialize `freemem` if this is the first time. The max virtual address that the
      * linker did *not* assign to any kernel code or global variables. */
     if (freemem == 0) {
-        freemem = (u_long)end;
+        freemem = (u_long)end + maxpa;
     }
 
-    /* Step 1: Round up `freemem` up to be aligned properly */
-    freemem = ROUND(freemem, align);
+    /* Step 1: Round down `freemem` up to be aligned properly */
+    alloced_mem = ROUNDDOWN(freemem - n, align);
+    // We're out of memory, PANIC !!
+    if (alloced_mem < (u_long)end) {
+        panic("out of memorty\n");
+        return (void *)-E_NO_MEM;
+    }
 
-    /* Step 2: Save current value of `freemem` as allocated chunk. */
-    alloced_mem = freemem;
-
-    /* Step 3: Increase `freemem` to record allocation. */
-    freemem = freemem + n;
+    /* Step 3: Decrease `freemem` to record allocation. */
+    freemem = alloced_mem;
 
     /* Step 4: Clear allocated chunk if parameter `clear` is set. */
     if (clear) {
         bzero((void *)alloced_mem, n);
     }
 
-    // We're out of memory, PANIC !!
-    if (PADDR(freemem) >= maxpa) {
-        panic("out of memorty\n");
-        return (void *)-E_NO_MEM;
-    }
+    
 
     /* Step 5: return allocated chunk. */
     return (void *)alloced_mem;
