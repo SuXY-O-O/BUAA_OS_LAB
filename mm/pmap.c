@@ -184,28 +184,29 @@ page_init(int mode)
     /* Hint: Use macro `LIST_INIT` defined in include/queue.h. */
     LIST_INIT(&page_free_list);
     /* Step 2: Align `freemem` up to multiple of BY2PG. */
-    ROUND(freemem, BY2PG);
+    ROUNDDOWN(freemem, BY2PG);
+    //printf("0x%x, freemem\n",freemem);
     /* Step 3: Mark all memory blow `freemem` as used(set `pp_ref`
      * filed to 1) */
     int i;
     for (i = 0; i < npage; i++)
     {
-        if (page2pa(pages + i) > PADDR(freemem))
+        if (page2pa(pages + i) < PADDR(freemem))
         {
-	    pages[i].pp_ref = 1;
+	         pages[i].pp_ref = 1;
         }
         else
-	{
-	    pages[i].pp_ref = 0;
-	    if (mode == 0)
-	    {
-		LIST_INSERT_HEAD(&page_free_list, (pages + i), pp_link);
-	    }
-	    else
-	    {
-		LIST_INSERT_TAIL(&page_free_list, (pages + i), pp_link);
-	    }
-	}
+	     {
+	         pages[i].pp_ref = 0;
+	         if (mode == 0)
+	         {
+		          LIST_INSERT_HEAD(&page_free_list, (pages + i), pp_link);
+	         }
+	         else
+	         {
+		          LIST_INSERT_TAIL(&page_free_list, (pages + i), pp_link);
+	         }
+	      }
     }
     /* Step 4: Mark the other memory as free. */
     /* mode == 0 : BIG2SMALL mode != 0 : SMALL2BIG */
@@ -515,7 +516,7 @@ physical_memory_manage_check(void)
     assert(pp2 && pp2 != pp1 && pp2 != pp0);
 
 
-
+    //printf("518\n");
     // temporarily steal the rest of the free pages
     fl = page_free_list;
     // now this page_free list must be empty!!!!
@@ -523,7 +524,9 @@ physical_memory_manage_check(void)
     // should be no free memory
     assert(page_alloc(&pp) == -E_NO_MEM);
 
+    //printf("begin temp\n");
     temp = (int*)page2kva(pp0);
+    //printf("0x%x,temp\n0x%x, pp0\n", temp, pp0);
     //write 1000 to pp0
     *temp = 1000;
     // free pp0
