@@ -47,11 +47,13 @@ static void *alloc(u_int n, u_int align, int clear)
 {
     extern char end[];
     u_long alloced_mem;
+    //printf("0x%x end\n",(u_long)end);
 
     /* Initialize `freemem` if this is the first time. The max virtual address that the
      * linker did *not* assign to any kernel code or global variables. */
     if (freemem == 0) {
-        freemem = (u_long)end + maxpa;
+        freemem = 0x80000000 + maxpa;
+        //printf("0x%x, freemem\n",freemem);
     }
 
     /* Step 1: Round down `freemem` up to be aligned properly */
@@ -557,7 +559,7 @@ physical_memory_manage_check(void)
 		//printf("0x%x  0x%x\n",&test_pages[i], test_pages[i].pp_link.le_next);
 
 	}
-   printf("we end insert tail\n");
+   //printf("we end insert tail\n");
 	p = LIST_FIRST(&test_free);
 	int answer1[]={0,1,2,3,4,5,6,7,8,9};
 	assert(p!=NULL);
@@ -568,7 +570,7 @@ physical_memory_manage_check(void)
         //printf("0x%x\n",p);
 		//printf("ptr: 0x%x v: %d\n",(p->pp_link).le_next,((p->pp_link).le_next)->pp_ref);
 		p=LIST_NEXT(p,pp_link);
-       printf("0x%x\n",p);
+      // printf("0x%x\n",p);
 	}
    //printf("we end while\n");
 	// insert_after test
