@@ -177,7 +177,7 @@ void mips_vm_init()
 void
 page_init(int mode)
 {
-    printf("init page called\n");
+    //printf("init page called\n");
     /* Step 1: Initialize page_free_list. */
     /* Hint: Use macro `LIST_INIT` defined in include/queue.h. */
     LIST_INIT(&page_free_list);
@@ -188,7 +188,7 @@ page_init(int mode)
     int i;
     for (i = 0; i < npage; i++)
     {
-        if (page2pa(pages + i) >= PADDR(freemem))
+        if (page2pa(pages + i) > PADDR(freemem))
         {
 	    pages[i].pp_ref = 1;
         }
@@ -557,6 +557,7 @@ physical_memory_manage_check(void)
 		//printf("0x%x  0x%x\n",&test_pages[i], test_pages[i].pp_link.le_next);
 
 	}
+   printf("we end insert tail\n");
 	p = LIST_FIRST(&test_free);
 	int answer1[]={0,1,2,3,4,5,6,7,8,9};
 	assert(p!=NULL);
@@ -564,13 +565,16 @@ physical_memory_manage_check(void)
 	{
 		//printf("%d %d\n",p->pp_ref,answer1[j]);
 		assert(p->pp_ref==answer1[j++]);
+        //printf("0x%x\n",p);
 		//printf("ptr: 0x%x v: %d\n",(p->pp_link).le_next,((p->pp_link).le_next)->pp_ref);
 		p=LIST_NEXT(p,pp_link);
-
+       printf("0x%x\n",p);
 	}
+   //printf("we end while\n");
 	// insert_after test
 	int answer2[]={0,1,2,3,4,20,5,6,7,8,9};
 	q=(struct Page *)alloc(sizeof(struct Page), BY2PG, 1);
+   //printf("we can get line 575\n");
 	q->pp_ref = 20;
 
 	//printf("---%d\n",test_pages[4].pp_ref);
@@ -578,9 +582,9 @@ physical_memory_manage_check(void)
 	//printf("---%d\n",LIST_NEXT(&test_pages[4],pp_link)->pp_ref);
 	p = LIST_FIRST(&test_free);
 	j=0;
-	//printf("into test\n");
+	printf("into test\n");
 	while(p!=NULL){
-	//      printf("%d %d\n",p->pp_ref,answer2[j]);
+	      //printf("%d %d\n",p->pp_ref,answer2[j]);
 			assert(p->pp_ref==answer2[j++]);
 			p=LIST_NEXT(p,pp_link);
 	}
