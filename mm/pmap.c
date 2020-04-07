@@ -121,7 +121,7 @@ void boot_map_segment(Pde *pgdir, u_long va, u_long size, u_long pa, int perm)
     Pte *pgtable_entry;
 
     /* Step 1: Check if `size` is a multiple of BY2PG. */
-    ROUND(size, BY2PG);
+    size = ROUND(size, BY2PG);
     /* Step 2: Map virtual address space to physical address. */
     /* Hint: Use `boot_pgdir_walk` to get the page table entry of virtual address `va`. */
     for (i = 0; i < size; i += BY2PG)
@@ -183,7 +183,7 @@ page_init(void)
     /* Hint: Use macro `LIST_INIT` defined in include/queue.h. */
     LIST_INIT(&page_free_list);
     /* Step 2: Align `freemem` up to multiple of BY2PG. */
-    ROUND(freemem, BY2PG);
+    freemem = ROUND(freemem, BY2PG);
     /* Step 3: Mark all memory blow `freemem` as used(set `pp_ref`
      * filed to 1) */
     int i;
