@@ -29,4 +29,46 @@ void sched_yield(void)
      *  functions or macros below may be used (not all):
      *  LIST_INSERT_TAIL, LIST_REMOVE, LIST_FIRST, LIST_EMPTY
      */
+    //printf("in yeild now\n");
+    if (curenv != NULL)
+    {
+        count++;
+        if (curenv->env_status == ENV_FREE) 
+        {
+            LIST_REMOVE(curenv, env_sched_link);
+        }
+        else if (curenv->env_status == ENV_NOT_RUNNABLE)
+        {
+            LIST_REMOVE(curenv, env_sched_link);
+            LIST_INSERT_HEAD(&env_sched_list[1-point], curenv, env_sched_link);
+        }
+        else if (count < curenv->env_pri)
+        {
+            //printf("%d\n",count);
+            env_run(curenv);
+            return;
+        }
+        LIST_REMOVE(curenv, env_sched_link);
+		LIST_INSERT_HEAD(&env_sched_list[1-point], curenv, env_sched_link);
+        count = 0;
+    }
+    if (LIST_EMPTY(&(env_sched_list[point]))) {
+		point ^= 1;
+	}
+    LIST_FOREACH(curenv, &(env_sched_list[point]), env_sched_link)
+    {
+        if (curenv->env_status == ENV_FREE) 
+        {
+            LIST_REMOVE(curenv, env_sched_link);
+        }
+        else if (curenv->env_status == ENV_NOT_RUNNABLE)
+        {
+            LIST_REMOVE(curenv, env_sched_link);
+            LIST_INSERT_HEAD(&env_sched_list[1-point], curenv, env_sched_link);
+        }
+        else
+        {
+            env_run(curenv);
+        }
+    }
 }

@@ -73,7 +73,6 @@ static void *alloc(u_int n, u_int align, int clear)
         panic("out of memorty\n");
         return (void *)-E_NO_MEM;
     }
-
     /* Step 5: return allocated chunk. */
     return (void *)alloced_mem;
 }
