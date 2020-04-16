@@ -40,6 +40,52 @@ u_int mkenvid(struct Env *e)
     return (++next_env_id << (1 + LOG2NENV)) | idx;
 }
 
+//lab3-extra
+u_int newmkenvid(struct Env *e, int pri) 
+{
+    static u_long new_next_env_id = 0;
+    u_int idx = e - envs;
+    return (++new_next_env_id << (1 + 5 + LOG2NENV)) | (pri << (1 + LOG2NENV)) | idx;
+}
+
+//lab3-extra
+void output_env_info(int envid)
+{
+    u_int no = (u_int)envid >> (1 + 5 + LOG2NENV);
+    u_int env_index = envid & 0x3ff;
+    u_int env_pri = ((u_int)envid >> (1 + LOG2NENV)) & 0xf;
+    printf("no=%d,env_index=%d,env_pri=%d\n", no, env_index, env_pri);
+}
+
+//lab3_extra
+int newenvid2env(u_int envid, struct Env **penv, int checkperm)
+{
+    struct Env *e;
+    if (envid == 0)
+    {
+        e = curenv;
+    }
+    else
+    {
+        e = &(envs[ENVX(envid)]);
+    }
+    if (e->env_status == ENV_FREE || e->env_id != envid)
+    {
+        *penv = 0;
+        return -E_BAD_ENV;
+    }
+    if (checkperm == 1) 
+    {
+        if (e->env_id != curenv->env_id && e->env_parent_id != curenv->env_id)
+        {
+            *penv = 0;
+            return -E_BAD_ENV;
+        }
+    }
+    *penv = e;
+    return 0;
+}
+
 /* Overview:
  *  Converts an envid to an env pointer.
  *  If envid is 0 , set *penv = curenv;otherwise set *penv = envs[ENVX(envid)];
@@ -119,6 +165,20 @@ env_init(void)
     {
         envs[i].env_status = ENV_FREE;
         LIST_INSERT_TAIL(&env_free_list, (envs + i), env_link);
+    }
+}
+
+// lab3-extra
+void init_envid()
+{
+    int i;
+    for (i = 0; i < NENV; i++)
+    {
+        if (envs[i].env_status == ENV_RUNNABLE)
+        {
+            u_int new_id = newmkenvid(&(envs[i]), envs[i].env_pri);
+            envs[i].env_id = new_id;
+        }
     }
 }
 
