@@ -182,6 +182,104 @@ void init_envid()
     }
 }
 
+//lab3_extra_advance
+int check_same_root(u_int envid1, u_int envid2)
+{
+    struct Env *e1, *e2;
+    e1 = &(envs[ENVX(envid1)]);
+    e2 = &(envs[ENVX(envid2)]);
+    if (e1->env_status == ENV_NOT_RUNNABLE || e2->env_status == ENV_NOT_RUNNABLE)
+    {
+        return -1;
+    }
+    u_int parent1 = envid1;
+    u_int parent2 = envid2;
+    while (e1->env_parent_id != 0)
+    {
+        parent1 = e1->env_parent_id;
+        e1 = &(envs[ENVX(parent1)]);
+    }
+    while (e2->env_parent_id != 0)
+    {
+        parent2 = e2->env_parent_id;
+        e2 = &(envs[ENVX(parent2)]);
+    }
+    if (parent1 != parent2)
+    {
+        return 0;
+    }
+    else
+    {
+        return 1;
+    } 
+}
+
+//lab3_extra_advance
+void kill_all(u_int envid)
+{
+    u_int in_tree[NENV] = {0};
+    int index = 0;
+    struct Env *e = &(envs[ENVX(envid)]);
+    while (1)
+    {
+        if (e->env_status == ENV_NOT_RUNNABLE)
+        {
+            printf("something is wrong!\n");
+            return;
+        }
+        in_tree[index] = e->env_id;
+        index++;
+        if (e->env_parent_id != 0)
+        {
+            e = &(envs[ENVX(e->env_parent_id)]);
+            continue;
+        }
+        else
+        {
+            break;
+        }
+    }
+    int i, j;
+    for (i = 0; i < NENV; i++)
+    {
+        int tmp = 0;
+        int found = 0;
+        struct Env now = envs[i];
+        while (1)
+        {
+            for (j = 0; j < index; j++)
+            {
+                if (in_tree[j] == now.env_id)
+                {
+                    if (envs[i].env_status == ENV_NOT_RUNNABLE)
+                    {
+                        printf("something is wrong!\n");
+                        return;
+                    }
+                    envs[i].env_status = ENV_NOT_RUNNABLE;
+                    found = 1;
+                    break;
+                }
+            }
+            if (found)
+            {
+                index += tmp;
+                break;
+            }
+            else if (now.env_parent_id != 0)
+            {
+                in_tree[index + tmp] = envs[i].env_id;
+                tmp++;
+                now = envs[ENVX(now.env_parent_id)];
+                continue;
+            }
+            else
+            {
+                break;
+            }
+        }
+    }
+}
 
 /* Overview:
  *  Initialize the kernel virtual memory layout for 'e'.
