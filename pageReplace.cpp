@@ -25,14 +25,14 @@ void pageReplace (long* physic_memery, long nwAdd)
         {
             physic_memery[i] = page;
             //sign[i] = 0;
-            if ((i + 1) < (group + 16))
-            {
-                if (physic_memery[i + 1] == 0)
-                {
-                    physic_memery[i + 1] = page + 4;
+            //if ((i + 1) < (group + 16))
+            //{
+            //    if (physic_memery[i + 1] == 0)
+            //    {
+            //        physic_memery[i + 1] = page + 4;
                     //sign[i + 1] = 0;
-                }
-            }
+            //    }
+            //}
             return;
         }
     }
