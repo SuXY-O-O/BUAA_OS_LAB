@@ -16,7 +16,7 @@ void pageReplace (long* physic_memery, long nwAdd)
             if (page == physic_memery[i])
             {
                 return;
-                sign[i] = 0;
+               // sign[i] = 0;
             }
         }
     for (i = group; i < group + 16; i++)
@@ -24,13 +24,13 @@ void pageReplace (long* physic_memery, long nwAdd)
         if (physic_memery[i] == 0)
         {
             physic_memery[i] = page;
-            sign[i] = 0;
+            //sign[i] = 0;
             if ((i + 1) < (group + 16))
             {
                 if (physic_memery[i + 1] == 0)
                 {
                     physic_memery[i + 1] = page + 4;
-                    sign[i + 1] = 0;
+                    //sign[i + 1] = 0;
                 }
             }
             return;
@@ -52,6 +52,6 @@ void pageReplace (long* physic_memery, long nwAdd)
     }
     i = ((rand() % 2) << 3) + ((rand() % 2) << 2) + ((rand() % 2) << 1) + (rand() % 2);
     physic_memery[i + group] = page;
-    sign[i + group] = 0;
+    //sign[i + group] = 0;
 }
 
