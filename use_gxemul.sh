@@ -1,4 +1,0 @@
-#!bin/bash
-#use for check
-
-gxemul -E testmips -C R3000 -M 64 ./gxemul/vmlinux
