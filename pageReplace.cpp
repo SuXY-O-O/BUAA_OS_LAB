@@ -1,18 +1,14 @@
-#include <stdlib.h>
-#include <time.h>
-#include <stdio.h>
 #include "pageReplace.h"
 
 void pageReplace (long* physic_memery, long nwAdd)
 {
     long page = nwAdd >> 12;
-    unsigned int group = (page & 0b11) << 4;
+    unsigned int group = (page & 0b111) << 3;
     int i;
     int static sign[64] = {0};
-    int static first = 1;
     for (i = 0; i < 64; i++)
         sign[i]++;
-    for (i = group; i < group + 16; i++)
+    for (i = group; i < group + 8; i++)
         {
             if (page == physic_memery[i])
             {
@@ -20,7 +16,7 @@ void pageReplace (long* physic_memery, long nwAdd)
                 return;
             }
         }
-    for (i = group; i < group + 16; i++)
+    for (i = group; i < group + 8; i++)
     {
         if (physic_memery[i] == 0)
         {
@@ -30,23 +26,12 @@ void pageReplace (long* physic_memery, long nwAdd)
         }
     }
     int max = 0;
-    for (i = group; i < group + 16; i++)
+    for (i = group; i < group + 8; i++)
     {
         if (sign[i] >= sign[max])
             max = i;
     }
-    if (sign[max] >= 8)
-    {
-        physic_memery[max] = page;
-        sign[max] = 0;
-        return;
-    }
-    if (first)
-    {
-        srand((unsigned int)time(0));
-        first = 0;
-    }
-    i = ((rand() % 2) << 3) + ((rand() % 2) << 2) + ((rand() % 2) << 1) + (rand() % 2);
-    physic_memery[i + group] = page;
-    sign[i + group] = 0;
+    physic_memery[max] = page;
+    sign[max] = 0;
+    return;
 }
