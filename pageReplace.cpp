@@ -3,32 +3,26 @@
 void pageReplace (long* physic_memery, long nwAdd)
 {
     long page = nwAdd >> 12;
-    unsigned int group = page & 0b11;
-    unsigned int index = group << 4;
-    unsigned int next_index = ((group + 1) % 4) << 4;
+    unsigned int group = (page & 0b111) << 3;
     int i;
     int static sign[64] = {0};
     for (i = 0; i < 64; i++)
         sign[i]++;
-    for (i = 0; i < 16; i++)
+    for (i = group; i < group + 8; i++)
     {
-        if (page == physic_memery[index + i])
+        if (page == physic_memery[i])
         {
-            sign[index + i] = 0;
+            sign[i] -= 3;
             return;
         }
     }
     int max = 0;
-    int next_max = 0;
-    for (i = 0; i < 16; i++)
+    for (i = group; i < group + 8; i++)
     {
-        if (sign[index + i] > sign[index + max])
+        if (sign[i] > sign[max])
             max = i;
-        if (sign[next_index + i] > sign[next_index + next_max])
-            next_max = i;
     }
-    physic_memery[max + index] = page;
-    physic_memery[next_max + next_index] = page + 1;
-    sign[index + max] = 0;
-    sign[next_index + next_max] = 0;
+    physic_memery[max] = page;
+    sign[max] = 0;
+    return;
 }
