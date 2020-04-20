@@ -11,21 +11,10 @@ void pageReplace (long* physic_memery, long nwAdd)
     for (i = 0; i < 64; i++)
         sign[i]++;
     for (i = 0; i < 16; i++)
-        {
-            if (page == physic_memery[index + i])
-            {
-                sign[index + i] = 0;
-                return;
-            }
-        }
-    for (i = 0; i < 16; i++)
     {
-        if (physic_memery[i + index] == 0)
+        if (page == physic_memery[index + i])
         {
-            physic_memery[i + index] = page;
             sign[index + i] = 0;
-            physic_memery[i + next_index] = page + 1;
-            sign[next_index + i] = 0;
             return;
         }
     }
