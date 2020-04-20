@@ -7,10 +7,10 @@ void pageReplace (long* physic_memery, long nwAdd)
     long page = nwAdd >> 12;
     unsigned int group = (page & 0b11) << 4;
     int i;
-    int static sign[64] = {0};
+    //int static sign[64] = {0};
     int static first = 1;
-    for (i = 0; i < 64; i++)
-        sign[i]++;
+    //for (i = 0; i < 64; i++)
+    //    sign[i]++;
     for (i = group; i < group + 16; i++)
         {
             if (page == physic_memery[i])
@@ -36,7 +36,7 @@ void pageReplace (long* physic_memery, long nwAdd)
             return;
         }
     }
-    for (i = group; i < group + 16; i++)
+    /* for (i = group; i < group + 16; i++)
     {
         if (sign[i] >= 8)
         {
@@ -44,7 +44,7 @@ void pageReplace (long* physic_memery, long nwAdd)
             sign[i] = 0;
             return;
         }
-    }
+    }*/
     if (first)
     {
         srand((unsigned int)time(0));
