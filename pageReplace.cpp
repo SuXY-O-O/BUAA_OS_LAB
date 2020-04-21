@@ -5,6 +5,7 @@
 
 void pageReplace (long* physic_memery, long nwAdd)
 {
+    int static first = 1;
     long page = nwAdd >> 12;
     unsigned int group = (page & 0b1111) << 2;
     int i;
@@ -14,6 +15,11 @@ void pageReplace (long* physic_memery, long nwAdd)
         {
             return;
         }
+    }
+    if (first)
+    {
+        srand((unsigned int)time(0));
+        first = 0;
     }
     i = ((rand() % 2) << 1) + (rand() % 2);
     physic_memery[i] = page;
