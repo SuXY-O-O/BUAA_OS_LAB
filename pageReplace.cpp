@@ -7,7 +7,7 @@ void pageReplace (long* physic_memery, long nwAdd)
     unsigned int end = group + 4;
     int i;
     int static sign[64] = {0};
-    for (i = 0; i < 64; i++)
+    for (i = group; i < end; i++)
         sign[i]++;
     for (i = group; i < end; i++)
     {
