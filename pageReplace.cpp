@@ -1,29 +1,21 @@
+#include <stdlib.h>
+#include <time.h>
+//#include <stdio.h>
 #include "pageReplace.h"
 
 void pageReplace (long* physic_memery, long nwAdd)
 {
     long page = nwAdd >> 12;
     unsigned int group = (page & 0b1111) << 2;
-    unsigned int end = group + 4;
     int i;
-    int static sign[64] = {0};
-    for (i = group; i < end; i++)
-        sign[i]++;
-    for (i = group; i < end; i++)
+    for (i = group; i < group + 4; i++)
     {
         if (page == physic_memery[i])
         {
-            sign[i] = 0;
             return;
         }
     }
-    int max = 0;
-    for (i = group; i < end; i++)
-    {
-        if (sign[i] > sign[max])
-            max = i;
-    }
-    physic_memery[max] = page;
-    sign[max] = 0;
+    i = ((rand() % 2) << 1) + (rand() % 2);
+    physic_memery[i] = page;
     return;
 }
