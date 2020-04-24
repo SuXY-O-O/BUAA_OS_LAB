@@ -43,3 +43,4 @@ void pageReplace (long* physic_memery, long nwAdd)
     sign[max] = 0;
     return;
 }
+// to test again
