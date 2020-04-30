@@ -67,4 +67,5 @@ page_fault_handler(struct Trapframe *tf)
     tf->cp0_epc = curenv->env_pgfault_handler;
     //printf("page fault handelr\n %d\n", curenv->env_pgfault_handler);
     return;
+    
 }
