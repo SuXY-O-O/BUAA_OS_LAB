@@ -83,7 +83,7 @@ static void
 pgfault(u_int va)
 {
 	u_int *tmp;
-	//	writef("fork.c:pgfault():\t va:%x\n",va);
+		//writef("fork.c:pgfault():\t va:%x\n",va);
    tmp = &((*vpt)[va >> 12]);
 	if (!(*tmp & PTE_COW))
 		user_panic("pgfault - not COW\n");
@@ -160,7 +160,6 @@ fork(void)
 	extern struct Env *env;
 	u_int i;
    //user_panic("fork\n");
-
 	//The parent installs pgfault using set_pgfault_handler
    set_pgfault_handler(pgfault);
 	//alloc a new alloc
@@ -176,7 +175,7 @@ fork(void)
 		for (i = 0; i < USTACKTOP; i += BY2PG)
 			if ((*vpd)[i >> 22] & PTE_V)
 				duppage(newenvid, i >> 12);
-		if ((syscall_mem_alloc(newenvid, USTACKTOP - BY2PG, PTE_V | PTE_R)) != 0)
+		if ((syscall_mem_alloc(newenvid, UXSTACKTOP - BY2PG, PTE_V | PTE_R)) != 0)
 			user_panic("fork - set pgfault page for child fail\n");
 		if ((syscall_set_pgfault_handler(newenvid, __asm_pgfault_handler, UXSTACKTOP)) != 0)
 			user_panic("fork - set pgfault handler for child fail\n");

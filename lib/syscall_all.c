@@ -116,11 +116,12 @@ int sys_set_pgfault_handler(int sysno, u_int envid, u_int func, u_int xstacktop)
 	// Your code here.
 	struct Env *env;
 	int ret;
-
+    //printf("set pgfault handler\n");
 	ret = envid2env(envid, &env, 0);
 	if (ret != 0)
 		return ret;
 	env->env_pgfault_handler = func;
+   env->env_xstacktop = xstacktop;
 
 	return 0;
 	//	panic("sys_set_pgfault_handler not implemented");
@@ -151,7 +152,7 @@ int sys_mem_alloc(int sysno, u_int envid, u_int va, u_int perm)
 	struct Page *ppage;
 	int ret;
 	ret = 0;
-
+    //printf("mem alloc\n");
 	if (va >= UTOP)
 		panic("va >= UTOP at sys_mem_alloc\n");
 	if ((perm & PTE_V) == 0)
@@ -196,7 +197,7 @@ int sys_mem_map(int sysno, u_int srcid, u_int srcva, u_int dstid, u_int dstva,
 	ret = 0;
 	round_srcva = ROUNDDOWN(srcva, BY2PG);
 	round_dstva = ROUNDDOWN(dstva, BY2PG);
-
+    //printf("mem map %x %x\n", srcva, dstva);
     //your code here
 	if (dstva >= UTOP || srcva >= UTOP)
 		panic("dstva >= UTOP at sys_mem_map\n");
@@ -229,7 +230,7 @@ int sys_mem_unmap(int sysno, u_int envid, u_int va)
 	// Your code here.
 	int ret;
 	struct Env *env;
-
+    //printf("mem unmap\n");
 	if (va >= UTOP)
 		panic("va >= UTOP at sys_mem_unmap\n");
 	ret = envid2env(envid, &env, 0);
@@ -259,14 +260,14 @@ int sys_env_alloc(void)
 	// Your code here.
 	int r;
 	struct Env *e;
-
+    //printf("env alloc\n");
 	r = env_alloc(&e, mkenvid(curenv));
 	if (r != 0)
 		return r;
 	e->env_status = ENV_NOT_RUNNABLE;
 	e->env_pri = curenv->env_pri;
 	e->env_cr3 = curenv->env_cr3;
-	bcopy((void*)TIMESTACK - sizeof(struct Trapframe),
+	bcopy((void*)KERNEL_SP - sizeof(struct Trapframe),
               (void*)&(e->env_tf),
               sizeof(struct Trapframe));
 	e->env_tf.pc = e->env_tf.cp0_epc;
@@ -294,7 +295,7 @@ int sys_set_env_status(int sysno, u_int envid, u_int status)
 	// Your code here.
 	struct Env *env;
 	int ret;
-
+    //printf("set env status\n");
 	ret = envid2env(envid, &env, 0);
 	if (ret != 0)
 		panic("set env status inviable id\n");
@@ -387,7 +388,7 @@ int sys_ipc_can_send(int sysno, u_int envid, u_int value, u_int srcva,
 	int r;
 	struct Env *e;
 	struct Page *p;
-
+    //printf("ipc can send\n");
 	r = envid2env(envid, &e, 0);
 	if (r != 0)
 		return r;

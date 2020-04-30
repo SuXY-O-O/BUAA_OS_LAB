@@ -62,7 +62,10 @@ int envid2env(u_int envid, struct Env **penv, int checkperm)
     /*Step 1: Assign value to e using envid. */
     if (envid == 0)
     {
-        e = curenv;
+        *penv = curenv;
+        if (curenv == 0)
+            printf("curenv is null\n");
+        return 0;
     }
     else
     {
