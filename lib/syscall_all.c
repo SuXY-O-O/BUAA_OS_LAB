@@ -261,7 +261,7 @@ int sys_env_alloc(void)
 	int r;
 	struct Env *e;
     //printf("env alloc\n");
-	r = env_alloc(&e, mkenvid(curenv));
+	r = env_alloc(&e, curenv->env_id);
 	if (r != 0)
 		return r;
 	e->env_status = ENV_NOT_RUNNABLE;
@@ -395,9 +395,9 @@ int sys_ipc_can_send(int sysno, u_int envid, u_int value, u_int srcva,
 	if (e->env_ipc_recving != 1)
 		return -E_IPC_NOT_RECV;
 	if (srcva != 0)
-		sys_mem_map(sysno, mkenvid(curenv), srcva, envid, e->env_ipc_dstva, perm);
+		sys_mem_map(sysno, curenv->env_id, srcva, envid, e->env_ipc_dstva, perm);
 	e->env_ipc_recving = 0;
-	e->env_ipc_from = mkenvid(curenv);
+	e->env_ipc_from = curenv->env_id;
 	e->env_ipc_value = value;
 	e->env_ipc_perm = perm;
 	e->env_status = ENV_RUNNABLE;
