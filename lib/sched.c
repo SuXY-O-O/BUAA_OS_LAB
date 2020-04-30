@@ -47,6 +47,7 @@ void sched_yield(void)
         }
     }
     struct Env * tmp;
+    count = 0;
     while (1)
     {
         if (LIST_EMPTY(&(env_sched_list[point]))) 

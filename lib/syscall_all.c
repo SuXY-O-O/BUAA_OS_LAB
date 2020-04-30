@@ -234,7 +234,8 @@ int sys_mem_unmap(int sysno, u_int envid, u_int va)
 	struct Env *env;
     //printf("mem unmap\n");
 	if (va >= UTOP)
-		panic("va >= UTOP at sys_mem_unmap\n");
+        return -E_INVAL;
+		//panic("va >= UTOP at sys_mem_unmap\n");
 	ret = envid2env(envid, &env, 0);
 	if (ret != 0)
 		return ret;
