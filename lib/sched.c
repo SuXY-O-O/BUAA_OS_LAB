@@ -46,11 +46,20 @@ void sched_yield(void)
             count = 0;
         }
     }
-    if (LIST_EMPTY(&(env_sched_list[point]))) {
-        point ^= 1;
+    struct Env * tmp;
+    while (1)
+    {
+        if (LIST_EMPTY(&(env_sched_list[point]))) 
+            point ^= 1;
+        if (LIST_EMPTY(&(env_sched_list[point])))
+            continue;
+        tmp = LIST_FIRST(&(env_sched_list[point]));
+        if (tmp->env_status != ENV_RUNNABLE)
+        {
+            LIST_REMOVE(tmp, env_sched_link);
+            LIST_INSERT_TAIL(&env_sched_list[1-point], tmp, env_sched_link);
+        }
+        else
+            env_run(tmp);
     }
-    if (LIST_EMPTY(&(env_sched_list[point]))) {
-        return;
-    }
-    env_run(LIST_FIRST(&(env_sched_list[point])));
 }

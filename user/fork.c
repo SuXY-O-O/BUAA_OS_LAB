@@ -84,15 +84,21 @@ pgfault(u_int va)
 {
 	u_int *tmp;
 	//	writef("fork.c:pgfault():\t va:%x\n",va);
-    
+   tmp = &((*vpt)[va >> 12]);
+	if (!(*tmp & PTE_COW))
+		user_panic("pgfault - not COW\n");
     //map the new page at a temporary place
-
+   tmp = USTACKTOP;
+	if ((syscall_mem_alloc(0, tmp, PTE_V | PTE_R) != 0))
+		user_panic("pgfault - mem alloc fail\n");
 	//copy the content
-	
+	user_bcopy(ROUNDDOWN(va, BY2PG), tmp, BY2PG);
     //map the page on the appropriate place
-	
+	if ((syscall_mem_map(0, tmp, 0, ROUNDDOWN(va, BY2PG), PTE_V | PTE_R)) != 0)
+		user_panic("pgfault - mem map fail\n");
     //unmap the temporary place
-	
+	if ((syscall_mem_unmap(0, tmp)) != 0) 
+		user_panic("pgfault - mem unmap fail\n");
 }
 
 /* Overview:
@@ -118,6 +124,19 @@ duppage(u_int envid, u_int pn)
 	u_int addr;
 	u_int perm;
 
+   addr = pn * BY2PG;
+	perm = (*vpt)[pn] & 0xfff;
+	if (!(perm & PTE_V))
+		return;
+	if (perm & PTE_R)
+		perm |= PTE_COW;
+	if (perm & PTE_LIBRARY)
+		perm = perm | PTE_R;
+	if (syscall_mem_map(0, addr, envid, addr, perm) != 0)
+		user_panic("error duplicate child\n");
+	if (syscall_mem_map(0, addr, 0, addr, perm) != 0)
+		user_panic("error rewrite father perm\n");
+	
 	//	user_panic("duppage not implemented");
 }
 
@@ -140,12 +159,30 @@ fork(void)
 	extern struct Env *envs;
 	extern struct Env *env;
 	u_int i;
-
+   //user_panic("fork\n");
 
 	//The parent installs pgfault using set_pgfault_handler
-
+   set_pgfault_handler(pgfault);
 	//alloc a new alloc
-
+   newenvid = syscall_env_alloc();
+	if (newenvid == 0) // is child
+	{
+		newenvid = syscall_getenvid();
+		env = &(envs[ENVX(newenvid)]);
+		return 0;
+	}
+	else // is father
+	{
+		for (i = 0; i < USTACKTOP; i += BY2PG)
+			if ((*vpd)[i >> 22] & PTE_V)
+				duppage(newenvid, i >> 12);
+		if ((syscall_mem_alloc(newenvid, USTACKTOP - BY2PG, PTE_V | PTE_R)) != 0)
+			user_panic("fork - set pgfault page for child fail\n");
+		if ((syscall_set_pgfault_handler(newenvid, __asm_pgfault_handler, UXSTACKTOP)) != 0)
+			user_panic("fork - set pgfault handler for child fail\n");
+		if ((syscall_set_env_status(newenvid, ENV_RUNNABLE)) != 0)
+			user_panic("fork - set env status for child fail\n");
+	}
 
 	return newenvid;
 }
