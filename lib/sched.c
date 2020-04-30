@@ -34,7 +34,7 @@ void sched_yield(void)
     {
         count++;
         //printf("%d\n",count);
-        if (count < curenv->env_pri)
+        if (count < curenv->env_pri && curenv->env_status == ENV_RUNNABLE)
         {
             env_run(curenv);
             return;
@@ -54,12 +54,14 @@ void sched_yield(void)
         if (LIST_EMPTY(&(env_sched_list[point])))
             continue;
         tmp = LIST_FIRST(&(env_sched_list[point]));
-        if (tmp->env_status != ENV_RUNNABLE)
+        if (tmp->env_status == ENV_NOT_RUNNABLE)
         {
             LIST_REMOVE(tmp, env_sched_link);
             LIST_INSERT_TAIL(&env_sched_list[1-point], tmp, env_sched_link);
         }
-        else
+        else if (tmp->env_status == ENV_FREE)
+            LIST_REMOVE(tmp, env_sched_link);
+        else if (tmp->env_status == ENV_RUNNABLE)
             env_run(tmp);
     }
 }

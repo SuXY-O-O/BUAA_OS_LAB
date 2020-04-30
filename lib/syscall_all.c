@@ -154,8 +154,9 @@ int sys_mem_alloc(int sysno, u_int envid, u_int va, u_int perm)
 	ret = 0;
     //printf("mem alloc\n");
 	if (va >= UTOP)
-		panic("va >= UTOP at sys_mem_alloc\n");
-	if ((perm & PTE_V) == 0)
+        return -E_INVAL;
+		//panic("va >= UTOP at sys_mem_alloc\n");
+	if (!(perm & PTE_V) || (perm & PTE_COW))
 		return -E_INVAL;
 	ret = page_alloc(&ppage);
 	if (ret != 0) 
@@ -200,7 +201,8 @@ int sys_mem_map(int sysno, u_int srcid, u_int srcva, u_int dstid, u_int dstva,
     //printf("mem map %x %x\n", srcva, dstva);
     //your code here
 	if (dstva >= UTOP || srcva >= UTOP)
-		panic("dstva >= UTOP at sys_mem_map\n");
+        return -E_INVAL;
+		//panic("dstva >= UTOP at sys_mem_map\n");
 	if ((perm & PTE_V) == 0)
 		return -E_INVAL;
 	ret = envid2env(srcid, &srcenv, 0);
@@ -299,7 +301,7 @@ int sys_set_env_status(int sysno, u_int envid, u_int status)
 	ret = envid2env(envid, &env, 0);
 	if (ret != 0)
 		panic("set env status inviable id\n");
-	if (env->env_status != ENV_RUNNABLE && env->env_status != ENV_FREE && env->env_status != ENV_NOT_RUNNABLE)
+	if (status != ENV_RUNNABLE && status != ENV_FREE && status != ENV_NOT_RUNNABLE)
 		return -E_INVAL;
 	env->env_status = status;
 	LIST_INSERT_TAIL(env_sched_list, env, env_sched_link);
@@ -357,6 +359,8 @@ void sys_panic(int sysno, char *msg)
 /*** exercise 4.7 ***/
 void sys_ipc_recv(int sysno, u_int dstva)
 {
+   if (dstva >= UTOP)
+		return;
 	curenv->env_ipc_recving = 1;
 	curenv->env_ipc_dstva = dstva;
 	curenv->env_status = ENV_NOT_RUNNABLE;
@@ -395,7 +399,11 @@ int sys_ipc_can_send(int sysno, u_int envid, u_int value, u_int srcva,
 	if (e->env_ipc_recving != 1)
 		return -E_IPC_NOT_RECV;
 	if (srcva != 0)
-		sys_mem_map(sysno, curenv->env_id, srcva, envid, e->env_ipc_dstva, perm);
+	{
+		r = sys_mem_map(sysno, curenv->env_id, srcva, envid, e->env_ipc_dstva, perm);
+		if (r != 0)
+			return r;
+	}
 	e->env_ipc_recving = 0;
 	e->env_ipc_from = curenv->env_id;
 	e->env_ipc_value = value;
