@@ -73,3 +73,6 @@ void bzero(void *b, size_t len)
 	}		
 	
 }
+
+//lab4 extra
+int sys_super_multi_parameter(u_int a, u_int b, u_int c, u_int d, u_int e, u_int f, u_int g, u_int h) {}
