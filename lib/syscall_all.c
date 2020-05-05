@@ -414,3 +414,46 @@ int sys_ipc_can_send(int sysno, u_int envid, u_int value, u_int srcva,
 	return 0;
 }
 
+//lab4 extra
+int
+sys_ipc_can_multi_send(int sysno, u_int value, u_int srcva, u_int perm, int env_count, ...)
+{
+	int i, r;
+	u_int envid;
+	struct Env *e;
+	struct Page *p;
+	va_list ap;
+	
+	va_start(ap, env_count);
+	// check env_ipc_recving
+	for (i = 0; i < env_count; i++)
+	{
+		envid = va_arg(ap, u_int);
+		r = envid2env(envid, &e, 0);
+		if (r != 0)
+			return r;
+		if (e->env_ipc_recving != 1)
+			return -E_IPC_NOT_RECV;
+	}
+	va_end(ap);
+	va_start(ap, env_count);
+	// send
+	for (i = 0; i < env_count; i++)
+	{
+		envid = va_arg(ap, u_int);
+		envid2env(envid, &e, 0);		// already checked
+		if (srcva != 0)
+		{
+			r = sys_mem_map(sysno, curenv->env_id, srcva, envid, e->env_ipc_dstva, perm);
+			if (r != 0)
+				return r;
+		}
+		e->env_ipc_recving = 0;
+		e->env_ipc_from = curenv->env_id;
+		e->env_ipc_value = value;
+		e->env_ipc_perm = perm;
+		e->env_status = ENV_RUNNABLE;
+	}
+	// succeed
+	return 0;
+}

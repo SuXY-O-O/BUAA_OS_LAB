@@ -106,3 +106,21 @@ nop
 		jr	k0			//
 		lw	sp,TF_REG29(sp)  /* Deallocate stack */  
 
+LEAF(syscall_ipc_can_multi_send)
+	sw 		a0, 0(sp)
+	sw 		a1, 4(sp)
+	sw 		a2, 8(sp)
+	sw		a3, 12(sp)
+	move	t0, a3
+	move 	a2, a0				// a2 <- arg0
+	move 	a3, a1				// a3 <- arg1
+	li 		a0, 9543			// a0 <- syscall number
+	addiu	a1, t0, 4			// a1 <- args number
+	addiu	sp, sp, -8			// space for a0, a1
+	sw		a0, 0(sp)
+	sw		a1, 0(sp)
+	nop
+	syscall
+	jr		ra
+	nop
+END(syscall_ipc_can_multi_send)

@@ -68,6 +68,7 @@ void syscall_ipc_recv(u_int dstva);
 int syscall_cgetc();
 // lab4 extra
 int syscall_super_multi_parameter(u_int a, u_int b, u_int c, u_int d, u_int e, u_int f, u_int g, u_int h);
+int syscall_ipc_can_multi_send(u_int value, u_int srcva, u_int perm, int env_count, ...);
 
 // string.c
 int strlen(const char *s);
