@@ -13,7 +13,7 @@ umain(void)
         writef("%x is waiting\n", syscall_getenvid());
         m = ipc_recv(&a, 0, 0);
         n = ipc_recv(&c, 0, 0);
-        writef("%x : m : %d : n : %d", syscall_getenvid(), m, n);
+        writef("%x : m : %d : n : %d\n", syscall_getenvid(), m, n);
         if (m == 5)
             break;
         m += 1;
