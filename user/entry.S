@@ -121,6 +121,8 @@ LEAF(syscall_ipc_can_multi_send)
 	sw		a1, 0(sp)
 	nop
 	syscall
+   nop
+   addiu  sp, sp, 8
 	jr		ra
 	nop
 END(syscall_ipc_can_multi_send)
