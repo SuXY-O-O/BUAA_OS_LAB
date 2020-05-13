@@ -442,6 +442,18 @@ int sys_ipc_can_send(int sysno, u_int envid, u_int value, u_int srcva,
 int sys_write_dev(int sysno, u_int va, u_int dev, u_int len)
 {
         // Your code here
+	u_int pos = 0;
+	if (dev >= 0x10000000 && (dev + len) <= 0x10000020)
+		pos = 1;
+	else if (dev >= 0x13000000 && (dev + len) <= 0x13004200)
+		pos = 2;
+	else if (dev >= 0x15000000 && (dev + len) <= 0x15000200)
+		pos = 3;
+	if (pos == 0)
+		return -E_INVAL;
+	pos = dev + 0xa0000000;
+	bcopy(va, pos, len);
+	return 0;
 }
 
 /* Overview:
@@ -463,4 +475,16 @@ int sys_write_dev(int sysno, u_int va, u_int dev, u_int len)
 int sys_read_dev(int sysno, u_int va, u_int dev, u_int len)
 {
         // Your code here
+	u_int pos = 0;
+	if (dev >= 0x10000000 && (dev + len) <= 0x10000020)
+		pos = 1;
+	else if (dev >= 0x13000000 && (dev + len) <= 0x13004200)
+		pos = 2;
+	else if (dev >= 0x15000000 && (dev + len) <= 0x15000200)
+		pos = 3;
+	if (pos == 0)
+		return -E_INVAL;
+	pos = dev + 0xa0000000;
+	bcopy(pos, va, len);
+	return 0;
 }
