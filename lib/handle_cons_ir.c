@@ -9,6 +9,7 @@ void handle_cons_ir(char c, int status)
     if (c == '\r')
     {
         data[count] = '\0';
+        count--;
         printf("length: %d\n", count);
         printf("content: %s\n", data);
         count = 0;
