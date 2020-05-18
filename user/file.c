@@ -292,7 +292,7 @@ print_file(int fd_id, int length)
 	f = (struct Filefd*)fd;
 	f->f_file.f_printcount++;
 
-	void *buf;
+	char *buf;
 	int i;
 	for (i = 0; i < length; i++)
 	{
