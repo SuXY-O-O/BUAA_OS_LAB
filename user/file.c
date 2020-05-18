@@ -54,8 +54,8 @@ open(const char *path, int mode)
 	size = ffd->f_file.f_size;
 	fileid = ffd->f_fileid;
 	// lab5-extra
-	ffd->f_file.f_printcount = 0;
-	ffd->f_file.f_modifycount = 0;
+	//ffd->f_file.f_printcount = 0;
+	//ffd->f_file.f_modifycount = 0;
 	// Step 4: Alloc memory, map the file content into memory.
 	for (i = 0; i < size; i += BY2BLK)
 	{
