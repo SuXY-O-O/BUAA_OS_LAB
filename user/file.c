@@ -53,6 +53,9 @@ open(const char *path, int mode)
 	ffd = (struct Filefd*) fd;
 	size = ffd->f_file.f_size;
 	fileid = ffd->f_fileid;
+	// lab5-extra
+	ffd->f_file.f_printcount = 0;
+	ffd->f_file.f_modifycount = 0;
 	// Step 4: Alloc memory, map the file content into memory.
 	for (i = 0; i < size; i += BY2BLK)
 	{
@@ -274,3 +277,53 @@ sync(void)
 	return fsipc_sync();
 }
 
+// lab5-extra
+int 
+print_file(int fd_id, int length)
+{
+	struct Fd *fd;
+	struct Filefd *f;
+	int r;
+
+	if ((r = fd_lookup(fd_id, &fd)) != 0) {
+		return r;
+	}
+
+	f = (struct Filefd*)fd;
+	f->f_file.f_printcount++;
+
+	void *buf;
+	if ((r = file_read(fd, buf, length, 0)) != 0)
+		return r;
+	
+	int i;
+	for (i = 0; i < length; i++)
+	{
+		r = syscall_write_dev(buf + i, 0x10000000, 1);
+		if (r <= 0) 
+			return r;
+	}
+
+	return f->f_file.f_printcount;
+}
+// lab5-extra
+int 
+modify_file(int fd_id, char *buf, int length)
+{
+	struct Fd *fd;
+	struct Filefd *f;
+	int r;
+
+	if ((r = fd_lookup(fd_id, &fd)) != 0) {
+		return r;
+	}
+
+	f = (struct Filefd*)fd;
+	f->f_file.f_modifycount++;
+
+	r = file_write(fd, buf, length, 0);
+	if (r < 0) 
+		return r;
+
+	return f->f_file.f_modifycount;
+}
