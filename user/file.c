@@ -285,7 +285,7 @@ print_file(int fd_id, int length)
 	struct Filefd *f;
 	int r;
 
-	if ((r = fd_lookup(fd_id, &fd)) != 0) {
+	if ((r = fd_lookup(fd_id, &fd)) < 0) {
 		return r;
 	}
 
@@ -293,14 +293,14 @@ print_file(int fd_id, int length)
 	f->f_file.f_printcount++;
 
 	void *buf;
-	if ((r = file_read(fd, buf, length, 0)) != 0)
+	if ((r = file_read(fd, buf, length, 0)) < 0)
 		return r;
 	
 	int i;
 	for (i = 0; i < length; i++)
 	{
 		r = syscall_write_dev(buf + i, 0x10000000, 1);
-		if (r <= 0) 
+		if (r < 0) 
 			return r;
 	}
 
@@ -314,7 +314,7 @@ modify_file(int fd_id, char *buf, int length)
 	struct Filefd *f;
 	int r;
 
-	if ((r = fd_lookup(fd_id, &fd)) != 0) {
+	if ((r = fd_lookup(fd_id, &fd)) < 0) {
 		return r;
 	}
 
