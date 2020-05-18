@@ -32,11 +32,12 @@ struct File {
 	u_int f_direct[NDIRECT];
 	u_int f_indirect;
     
+	struct File *f_dir;		// the pointer to the dir where this file is in, valid only in memory.
+    
 	// lab5-extra
 	u_int f_printcount;
 	u_int f_modifycount;
 
-	struct File *f_dir;		// the pointer to the dir where this file is in, valid only in memory.
 	u_char f_pad[BY2FILE - MAXNAMELEN - 4 - 4 - NDIRECT * 4 - 4 - 4 - 4 - 4];
 };
 
