@@ -297,11 +297,11 @@ print_file(int fd_id, int length)
 	for (i = 0; i < length; i++)
 	{
      r = file_read(fd, buf, 1, i);
-        if (r < 0)
-            return r;
+        //if (r < 0)
+           // return r;
 		r = syscall_write_dev(buf, 0x10000000, 1);
-		if (r < 0) 
-			return r;
+		//if (r < 0) 
+			//return r;
 	}
 
 	return f->f_file.f_printcount;
