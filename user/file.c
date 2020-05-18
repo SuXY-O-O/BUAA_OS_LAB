@@ -289,26 +289,22 @@ print_file(int fd_id, int length)
 		return r;
 	}
 
-	f = (struct Filefd*)fd;
+	f = (struct Filefd *)fd;
 	f->f_file.f_printcount++;
 
-	void *buf;
-	if ((r = file_read(fd, buf, length, 0)) < 0)
-		return r;
-	
+	char buf;
 	int i;
 	for (i = 0; i < length; i++)
 	{
-		r = syscall_write_dev(buf + i, 0x10000000, 1);
-		if (r < 0) 
-			return r;
+        file_read(fd, &buf, 1, i);
+		syscall_write_dev(&buf, 0x10000000, 1);
 	}
 
 	return f->f_file.f_printcount;
 }
 // lab5-extra
 int 
-modify_file(int fd_id, char *buf, int length)
+modify_file(int fd_id, char * buf, int length)
 {
 	struct Fd *fd;
 	struct Filefd *f;
@@ -318,7 +314,7 @@ modify_file(int fd_id, char *buf, int length)
 		return r;
 	}
 
-	f = (struct Filefd*)fd;
+	f = (struct Filefd *)fd;
 	f->f_file.f_modifycount++;
 
 	r = file_write(fd, buf, length, 0);
