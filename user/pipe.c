@@ -127,22 +127,20 @@ piperead(struct Fd *fd, void *vbuf, u_int n, u_int offset)
 	int i;
 	struct Pipe *p;
 	char *rbuf;
-//writef("read begin\n");
+    
 	p = (struct Pipe *)fd2data(fd);
+	//writef("[%d] piperead\n", fd2num(fd));
 	for(i = 0; i < n; ++i) {
-        //writef("reading n : %d  ", i);
-		while(p->p_wpos <= p->p_rpos) {
+		while(p->p_wpos == p->p_rpos) {
 			if(_pipeisclosed(fd, p)) {
-                //writef("read finish1\n");
 				return i;
 			}
+			//writef("[%d, %d]empty for read\n", p->p_wpos, p->p_rpos);
 			syscall_yield();
 		}
-		((char *)vbuf)[i] = p->p_buf[p->p_rpos % BY2PIPE];
-		p->p_rpos++;
-        //writef("%c\n", ((char *)vbuf)[i]);
+		((char *)vbuf)[i] = p->p_buf[p->p_rpos++];
 	}
-//writef("read finish2\n");
+
 	return n;
 }
 
@@ -159,22 +157,22 @@ pipewrite(struct Fd *fd, const void *vbuf, u_int n, u_int offset)
 	int i;
 	struct Pipe *p;
 	char *wbuf;
-	//writef("write begin\n");
-	p = (struct Pipe *)fd2data(fd);
+    
+   p = (struct Pipe *)fd2data(fd);
 	for(i = 0; i < n; ++i) {
-        //writef("writing n : %d  ", i);
-		if(_pipeisclosed(fd, p) &&  p->p_wpos >= p->p_rpos + BY2PIPE) {
-            //writef("write finish1\n");
+		if(_pipeisclosed(fd, p) && p->p_wpos == p->p_rpos + BY2PIPE) {
+			//writef("pipe full and closed\n");
 			return 0;
 		}
-		while(p->p_wpos >= p->p_rpos + BY2PIPE) {
+		while(p->p_wpos == p->p_rpos + BY2PIPE) {
+			//writef("[%d, %d]full for write\n", p->p_wpos, p->p_rpos);
 			syscall_yield();
 		}
-		p->p_buf[p->p_wpos % BY2PIPE] = ((char *)vbuf)[i];
-		p->p_wpos++;
-        //writef("%c\n", ((char *)vbuf)[i]);
+		//writef("[%d] writing $%c$\n", fd2num(fd), ((char*)vbuf)[i]);
+		p->p_buf[p->p_wpos++] = ((char *)vbuf)[i];
 	}
-//writef("write finish2\n");
+	//writef("pipe ended, [%d/%d]\n", p->p_rpos, p->p_wpos);
+
 	return n;
 }
 
