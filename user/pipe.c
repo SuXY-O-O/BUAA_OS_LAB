@@ -1,7 +1,7 @@
 #include "lib.h"
 #include <mmu.h>
 #include <env.h>
-#define debug 0
+#define debug 0 
 
 static int pipeclose(struct Fd*);
 static int piperead(struct Fd *fd, void *buf, u_int n, u_int offset);
@@ -128,25 +128,19 @@ piperead(struct Fd *fd, void *vbuf, u_int n, u_int offset)
 	struct Pipe *p;
 	char *rbuf;
 
-	p = (struct Pipe*)fd2data(fd);
-	if (p->p_rpos >= p->p_wpos) 
-	{
-		if (_pipeisclosed(fd, p))
-			return 0;
-		syscall_yield();
-	}
-	int to_read = n;
-	if (to_read > p->p_wpos - p->p_rpos)
-		to_read = p->p_wpos - p->p_rpos;
-	for (i = 0; i < to_read; i++)
-	{
+	p = (struct Pipe *)fd2data(fd);
+	for(i = 0; i < n; ++i) {
+		while(p->p_wpos >= p->p_rpos) {
+			if(_pipeisclosed(fd, p)) {
+				return 0;
+			}
+			syscall_yield();
+		}
 		((char *)vbuf)[i] = p->p_buf[p->p_rpos % BY2PIPE];
 		p->p_rpos++;
 	}
-	return to_read;
 
-	user_panic("piperead not implemented");
-//	return -E_INVAL;
+	return n;
 }
 
 static int
@@ -163,26 +157,17 @@ pipewrite(struct Fd *fd, const void *vbuf, u_int n, u_int offset)
 	struct Pipe *p;
 	char *wbuf;
 	
-	p = (struct Pipe*)fd2data(fd);
-	if (p->p_wpos - p->p_rpos >= BY2PIPE) 
-	{
-		if (_pipeisclosed(fd, p))
+	p = (struct Pipe *)fd2data(fd);
+	for(i = 0; i < n; ++i) {
+		if(_pipeisclosed(fd, p) && p->p_wpos >= p->p_rpos + BY2PIPE) {
 			return 0;
-		syscall_yield();
-	}
-	int to_write = n;
-	if (to_write > BY2PIPE - (p->p_wpos - p->p_rpos))
-		to_write = BY2PIPE - (p->p_wpos - p->p_rpos);
-	if (to_write > BY2PIPE)
-		to_write = BY2PIPE;
-	for (i = 0; i < to_write; i++) 
-	{
+		}
+		while(p->p_wpos >= p->p_rpos + BY2PIPE) {
+			syscall_yield();
+		}
 		p->p_buf[p->p_wpos % BY2PIPE] = ((char *)vbuf)[i];
 		p->p_wpos++;
 	}
-	return to_write;
-
-	user_panic("pipewrite not implemented");
 
 	return n;
 }
@@ -199,8 +184,8 @@ pipestat(struct Fd *fd, struct Stat *stat)
 static int
 pipeclose(struct Fd *fd)
 {
-	void *tmp = fd2data(fd);
 	syscall_mem_unmap(0, fd);
-	syscall_mem_unmap(0, tmp);
+	syscall_mem_unmap(0, fd2data(fd));
+	return 0;
 }
 
