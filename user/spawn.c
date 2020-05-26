@@ -98,6 +98,8 @@ int usr_is_elf_format(u_char *binary){
     return 0;
 }
 
+#define BUFPAGE (0x40000000)
+#define PERM (PTE_V | PTE_R)
 int usr_load_icode_mapper(u_long va, u_int32_t sgsize,
                              u_char *bin, u_int32_t bin_size, u_int child_envid)
 {
@@ -112,19 +114,21 @@ int usr_load_icode_mapper(u_long va, u_int32_t sgsize,
         {
             return r;
         }
+		syscall_mem_map(child_envid, (va + i), 0, BUFPAGE, PERM);
         if (i == 0)
         {
-            user_bcopy(bin, (void*)(va + i + offset), MIN((BY2PG - offset), bin_size));
+            user_bcopy(bin, (void*)(BUFPAGE + offset), MIN((BY2PG - offset), bin_size));
         }
         else if (bin_size + offset - i > BY2PG)
         {
-            user_bcopy((bin + i - offset), (va + i), BY2PG);
+            user_bcopy((bin + i - offset), BUFPAGE, BY2PG);
         }
         else
         {
-            user_bzero((va + i), BY2PG);
-            user_bcopy((bin + i - offset), (va + i), (bin_size + offset - i));
+            user_bzero(BUFPAGE, BY2PG);
+            user_bcopy((bin + i - offset), BUFPAGE, (bin_size + offset - i));
         } 
+		syscall_mem_unmap(0, BUFPAGE);
     }
     /*Step 2: alloc pages to reach `sgsize` when `bin_size` < `sgsize`.
     * hint: variable `i` has the value of `bin_size` now! */
@@ -133,14 +137,16 @@ int usr_load_icode_mapper(u_long va, u_int32_t sgsize,
         {
             return r;
         }
+		syscall_mem_map(child_envid, (va + i), 0, BUFPAGE, PERM);
         user_bzero((va + i), BY2PG);
+		syscall_mem_unmap(0, BUFPAGE);
         i += BY2PG;
     }
     return 0;
 }
 
 int 
-usr_load_elf(u_char *binary, u_long *entry_point, int child_envid){
+usr_load_elf(u_char *binary, u_long *entry_point, int child_envid, int fd){
 	//Hint: maybe this function is useful 
 	//If you want to use this func, you should fill it ,it's not hard
 	Elf32_Ehdr *ehdr = (Elf32_Ehdr *)binary;
@@ -163,16 +169,16 @@ usr_load_elf(u_char *binary, u_long *entry_point, int child_envid){
 	/* Your task here!  */
 	/* Real map all section at correct virtual address.Return < 0 if error. */
 	/* Hint: Call the callback function you have achieved before. */
-            r = usr_load_icode_mapper(phdr->p_vaddr, phdr->p_memsz, (binary + phdr->p_offset), phdr->p_filesz, child_envid);
+			char buf[phdr->p_filesz + 1];
+			seek(fd, phdr->p_offset);
+			readn(fd, buf, phdr->p_filesz);
+            r = usr_load_icode_mapper(phdr->p_vaddr, phdr->p_memsz, buf, phdr->p_filesz, child_envid);
             if (r < 0)
 				return r;
 		}
 		ptr_ph_table += ph_entry_size;
 	}
 	*entry_point = ehdr->e_entry;
-
-	syscall_set_env_status(child_envid, ENV_RUNNABLE);
-	
 	return 0;
 }
 
@@ -213,7 +219,7 @@ int spawn(char *prog, char **argv)
 	//        Hint 2: using read_map(...)
 	//		  Hint 3: Important!!! sometimes ,its not safe to use read_map ,guess why 
 	//				  If you understand, you can achieve the "load APP" with any method
-	if ((r = usr_load_elf(elfbuf, &text_start, child_envid)) < 0)
+	if ((r = usr_load_elf(elfbuf, &text_start, child_envid, fd)) < 0)
 		return r;
 	size = ((struct Filefd *)num2fd(fd))->f_file.f_size;
 	// Note1: Step 1 and 2 need sanity check. In other words, you should check whether
