@@ -138,7 +138,7 @@ int usr_load_icode_mapper(u_long va, u_int32_t sgsize,
             return r;
         }
 		syscall_mem_map(child_envid, (va + i), 0, BUFPAGE, PERM);
-        user_bzero((va + i), BY2PG);
+        user_bzero(BUFPAGE, BY2PG);
 		syscall_mem_unmap(0, BUFPAGE);
         i += BY2PG;
     }
