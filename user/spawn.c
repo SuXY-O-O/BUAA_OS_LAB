@@ -170,6 +170,9 @@ usr_load_elf(u_char *binary, u_long *entry_point, int child_envid){
 		ptr_ph_table += ph_entry_size;
 	}
 	*entry_point = ehdr->e_entry;
+    
+	syscall_set_env_status(child_envid, ENV_RUNNABLE);
+
 	return 0;
 }
 
