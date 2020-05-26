@@ -163,15 +163,11 @@ pipewrite(struct Fd *fd, const void *vbuf, u_int n, u_int offset)
 	p = (struct Pipe *)fd2data(fd);
 	for(i = 0; i < n; ++i) {
         //writef("writing n : %d  ", i);
-		/*if(_pipeisclosed(fd, p)) {
-            writef("write finish1\n");
-			return 0;
-		}*/
-		while(p->p_wpos >= p->p_rpos + BY2PIPE) {
-         if(_pipeisclosed(fd, p)) {
+		if(_pipeisclosed(fd, p) &&  p->p_wpos >= p->p_rpos + BY2PIPE) {
             //writef("write finish1\n");
-            return 0;
-        }
+			return 0;
+		}
+		while(p->p_wpos >= p->p_rpos + BY2PIPE) {
 			syscall_yield();
 		}
 		p->p_buf[p->p_wpos % BY2PIPE] = ((char *)vbuf)[i];
