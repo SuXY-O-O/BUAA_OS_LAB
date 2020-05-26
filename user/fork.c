@@ -131,7 +131,7 @@ duppage(u_int envid, u_int pn)
 	if (perm & PTE_R)
 		perm |= PTE_COW;
 	if (perm & PTE_LIBRARY)
-		perm = perm | PTE_R;
+		perm = (perm | PTE_R) & (!PTE_COW);
 	if (syscall_mem_map(0, addr, envid, addr, perm) != 0)
 		user_panic("error duplicate child\n");
 	if (syscall_mem_map(0, addr, 0, addr, perm) != 0)

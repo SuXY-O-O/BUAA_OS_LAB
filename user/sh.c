@@ -106,22 +106,41 @@ again:
 			}
 			// Your code here -- open t for reading,
 			// dup it onto fd 0, and then close the fd you got.
-			user_panic("< redirection not implemented");
+			fdnum = open(t, O_RDONLY);
+			dup(fdnum, 0);
+			close(fdnum);
+			//user_panic("< redirection not implemented");
 			break;
 		case '>':
+			if(gettoken(0, &t) != 'w'){
+				writef("syntax error: < not followed by word\n");
+				exit();
+			}
 			// Your code here -- open t for writing,
 			// dup it onto fd 1, and then close the fd you got.
-			user_panic("> redirection not implemented");
+			fdnum = open(t, O_WRONLY);
+			dup(fdnum, 1);
+			close(fdnum);
+			//user_panic("> redirection not implemented");
 			break;
 		case '|':
 			// Your code here.
 			// 	First, allocate a pipe.
+			pipe(p);
 			//	Then fork.
+			rightpipe = fork();
 			//	the child runs the right side of the pipe:
 			//		dup the read end of the pipe onto 0
 			//		close the read end of the pipe
 			//		close the write end of the pipe
 			//		goto again, to parse the rest of the command line
+			if (rightpipe == 0)
+			{
+				dup(p[0], 0);
+				close(p[0]);
+				close(p[1]);
+				goto again;
+			}
 			//	the parent runs the left side of the pipe:
 			//		dup the write end of the pipe onto 1
 			//		close the write end of the pipe
@@ -129,7 +148,14 @@ again:
 			//		set "rightpipe" to the child envid
 			//		goto runit, to execute this piece of the pipeline
 			//			and then wait for the right side to finish
-			user_panic("| not implemented");
+			if (rightpipe != 0)
+			{
+				dup(p[1], 1);
+				close(p[1]);
+				close(p[0]);
+				goto runit;
+			}
+			//user_panic("| not implemented");
 			break;
 		}
 	}
