@@ -113,6 +113,9 @@ env_init(void)
     
     /*Step 1: Initial env_free_list. */
     LIST_INIT(&env_free_list);
+    
+    LIST_INIT(&env_sched_list[0]);
+	LIST_INIT(&env_sched_list[1]);
 
     /*Step 2: Traverse the elements of 'envs' array,
      * set their status as free and insert them into the env_free_list.
@@ -174,7 +177,8 @@ env_setup_vm(struct Env *e)
     e->env_cr3 = PADDR(pgdir);
 
     // UVPT maps the env's own page table, with read-only permission.
-    e->env_pgdir[PDX(UVPT)]  = e->env_cr3 | PTE_V;
+	e->env_pgdir[PDX(VPT)]   = e->env_cr3;
+    e->env_pgdir[PDX(UVPT)]  = e->env_cr3 | PTE_V | PTE_R;
     return 0;
 }
 
@@ -338,7 +342,7 @@ load_icode(struct Env *e, u_char *binary, u_int size)
 
     /*Step 2: Use appropriate perm to set initial stack for new Env. */
     /*Hint: Should the user-stack be writable? */
-    r = page_insert(e->env_pgdir, p, (USTACKTOP - BY2PG), PTE_R);
+    r = page_insert(e->env_pgdir, p, (USTACKTOP - BY2PG), PTE_R | PTE_V);
     if (r < 0)
     {
         panic("load_icode-page_insert\n");
