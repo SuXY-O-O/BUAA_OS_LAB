@@ -165,6 +165,12 @@ void mips_vm_init()
     envs = (struct Env *)alloc(NENV * sizeof(struct Env), BY2PG, 1);
     n = ROUND(NENV * sizeof(struct Env), BY2PG);
     boot_map_segment(pgdir, UENVS, n, PADDR(envs), PTE_R);
+    
+    // lab6-extra 
+    extern struct Pv *pv;
+    pv = (struct Pv *)alloc(PVMAX * sizeof(struct Pv), BY2PG, 1);
+    boot_map_segment(pgdir, UENVS + n, PVMAX * sizeof(struct Pv), PADDR(pv), PTE_R);
+
 
     printf("pmap.c:\t mips vm init success\n");
 }

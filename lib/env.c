@@ -15,6 +15,12 @@ struct Env *curenv = NULL;            // the current env
 static struct Env_list env_free_list;    // Free list
 struct Env_list env_sched_list[2];      // Runnable list
 
+// lab6-extra
+struct Pv_list pv_free;
+struct Pv_list pv_using;
+struct Pv *pv;
+
+
 extern Pde *boot_pgdir;
 extern char *KERNEL_SP;
 
@@ -124,6 +130,15 @@ env_init(void)
         envs[i].env_status = ENV_FREE;
         LIST_INSERT_TAIL(&env_free_list, (envs + i), env_link);
     }
+    
+        // lab6-extra
+    LIST_INIT(&pv_free);
+    LIST_INIT(&pv_using);
+    for (i = 0; i < PVMAX; i++)
+    {
+        LIST_INSERT_TAIL(&pv_free, (pv + i), pv_using_link);
+    }
+
 }
 
 

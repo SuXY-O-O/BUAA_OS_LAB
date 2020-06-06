@@ -71,3 +71,9 @@ sys_call_table:                         // Syscall Table
     .word sys_ipc_can_send
     .word sys_ipc_recv
     .word sys_cgetc
+    // lab6-extra
+    .word sys_init_PV_var
+    .word sys_P
+    .word sys_V
+    .word sys_check_PV_value
+    .word sys_release_PV_var

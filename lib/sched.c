@@ -61,7 +61,10 @@ void sched_yield(void)
             LIST_INSERT_TAIL(&env_sched_list[1-point], tmp, env_sched_link);
         }
         else if (tmp->env_status == ENV_FREE)
+        {
             LIST_REMOVE(tmp, env_sched_link);
+            env_free(tmp);
+        }
         else if (tmp->env_status == ENV_RUNNABLE)
             env_run(tmp);
     }

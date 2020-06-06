@@ -81,4 +81,22 @@ void env_run(struct Env *e);
 		(u_int)binary_##x##_size); \
 }
 
+// lab6-extra
+#define PVWAITNUM 	15
+#define PVMAX 		10
+struct Pv {
+	u_int pv_id;
+	int semaphore;
+	int waiting_first;
+	int waiting_last;
+	LIST_ENTRY(Pv) pv_free_link;
+	LIST_ENTRY(Pv) pv_using_link;
+	struct Env *waiting[PVWAITNUM];
+};
+
+extern struct Pv *pv;
+LIST_HEAD(Pv_list, Pv);
+extern struct Pv_list pv_free;
+extern struct Pv_list pv_using;
+
 #endif // !_ENV_H_

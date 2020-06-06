@@ -414,3 +414,112 @@ int sys_ipc_can_send(int sysno, u_int envid, u_int value, u_int srcva,
 	return 0;
 }
 
+// lab6-extra
+extern struct Pv_list pv_free;
+extern struct Pv_list pv_using;
+
+int
+sys_init_PV_var(int init_value)
+{
+	static int count = 0;
+	if (LIST_EMPTY(&pv_free))
+		return -1;
+	count++;
+	struct Pv *p = LIST_FIRST(&pv_free);
+	p->pv_id = count;
+	p->semaphore = init_value;
+	p->waiting_first = 0;
+	p->waiting_last = 0;
+	LIST_REMOVE(p, pv_free_link);
+	LIST_INSERT_TAIL(&pv_using, p, pv_using_link);
+	return count;
+}
+
+void
+sys_P(int pv_id)
+{
+	struct Pv *p = 0;
+	int found = 0;
+	LIST_FOREACH(p, &pv_using, pv_using_link)
+	{
+		if (p->pv_id == pv_id)
+		{
+			found = 1;
+			break;
+		}
+	}
+	if (found == 0)
+		return;
+	p->semaphore--;
+	if (p->semaphore < 0)
+	{
+		curenv->env_status = ENV_NOT_RUNNABLE;
+		(p->waiting)[p->waiting_last] = curenv;
+		p->waiting_last = (p->waiting_last++) % PVWAITNUM;
+		sched_yield();
+	}
+}
+
+void 
+sys_V(int pv_id)
+{
+	struct Pv *p = 0;
+	int found = 0;
+	LIST_FOREACH(p, &pv_using, pv_using_link)
+	{
+		if (p->pv_id == pv_id)
+		{
+			found = 1;
+			break;
+		}
+	}
+	if (found == 0)
+		return;
+	p->semaphore++;
+	if (p->semaphore <= 0 && p->waiting_first != p->waiting_last)
+	{
+		((p->waiting)[p->waiting_first])->env_status = ENV_RUNNABLE;
+		p->waiting_first = (p->waiting_first++) % PVWAITNUM;
+	}
+}
+
+int
+sys_check_PV_value(int pv_id)
+{
+	struct Pv *p = 0;
+	int found = 0;
+	LIST_FOREACH(p, &pv_using, pv_using_link)
+	{
+		if (p->pv_id == pv_id)
+		{
+			found = 1;
+			break;
+		}
+	}
+	if (found == 0)
+		return -1;
+	return p->semaphore;
+}
+
+void 
+sys_release_PV_var(int pv_id)
+{
+	struct Pv *p = 0;
+	int found = 0;
+	LIST_FOREACH(p, &pv_using, pv_using_link)
+	{
+		if (p->pv_id == pv_id)
+		{
+			found = 1;
+			break;
+		}
+	}
+	if (found == 0)
+		return;
+	int i = p->waiting_first;
+	while(p->waiting_last != i)
+	{
+		((p->waiting)[i])->env_status = ENV_FREE;
+		i = (i++) % PVWAITNUM;
+	}
+}
