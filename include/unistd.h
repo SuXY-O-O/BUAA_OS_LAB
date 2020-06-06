@@ -21,10 +21,10 @@
 #define SYS_ipc_recv		((__SYSCALL_BASE ) + (13 ) )
 #define SYS_cgetc			((__SYSCALL_BASE ) + (14 ) )
 // lab6-extra
-#define SYS_init_PV_var     ((__SYSCALL_BASE ) + (17) )
-#define SYS_P               ((__SYSCALL_BASE ) + (18) )
-#define SYS_V               ((__SYSCALL_BASE ) + (19) )
-#define SYS_check_PV_value     ((__SYSCALL_BASE ) + (20) )
-#define SYS_release_PV_var     ((__SYSCALL_BASE ) + (21) )
+#define SYS_init_PV_var     ((__SYSCALL_BASE ) + (15) )
+#define SYS_P               ((__SYSCALL_BASE ) + (16) )
+#define SYS_V               ((__SYSCALL_BASE ) + (17) )
+#define SYS_check_PV_value     ((__SYSCALL_BASE ) + (18) )
+#define SYS_release_PV_var     ((__SYSCALL_BASE ) + (19) )
 
 #endif

@@ -136,7 +136,7 @@ env_init(void)
     LIST_INIT(&pv_using);
     for (i = 0; i < PVMAX; i++)
     {
-        LIST_INSERT_TAIL(&pv_free, (pv + i), pv_using_link);
+        LIST_INSERT_TAIL(&pv_free, (pv + i), pv_free_link);
     }
 
 }

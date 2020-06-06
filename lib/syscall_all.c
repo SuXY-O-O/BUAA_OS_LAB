@@ -419,7 +419,7 @@ extern struct Pv_list pv_free;
 extern struct Pv_list pv_using;
 
 int
-sys_init_PV_var(int init_value)
+sys_init_PV_var(int sys, int init_value)
 {
 	static int count = 0;
 	if (LIST_EMPTY(&pv_free))
@@ -436,8 +436,9 @@ sys_init_PV_var(int init_value)
 }
 
 void
-sys_P(int pv_id)
+sys_P(int sys, int pv_id)
 {
+    //printf("p %d\n", pv_id);
 	struct Pv *p = 0;
 	int found = 0;
 	LIST_FOREACH(p, &pv_using, pv_using_link)
@@ -461,8 +462,9 @@ sys_P(int pv_id)
 }
 
 void 
-sys_V(int pv_id)
+sys_V(int sys, int pv_id)
 {
+    //printf("v %d\n", pv_id);
 	struct Pv *p = 0;
 	int found = 0;
 	LIST_FOREACH(p, &pv_using, pv_using_link)
@@ -484,7 +486,7 @@ sys_V(int pv_id)
 }
 
 int
-sys_check_PV_value(int pv_id)
+sys_check_PV_value(int sys, int pv_id)
 {
 	struct Pv *p = 0;
 	int found = 0;
@@ -502,7 +504,7 @@ sys_check_PV_value(int pv_id)
 }
 
 void 
-sys_release_PV_var(int pv_id)
+sys_release_PV_var(int sys, int pv_id)
 {
 	struct Pv *p = 0;
 	int found = 0;

@@ -41,6 +41,7 @@ void sched_yield(void)
         }
         else
         {
+            //printf("\nin yeild now\n");
             LIST_REMOVE(curenv, env_sched_link);
             LIST_INSERT_TAIL(&env_sched_list[1-point], curenv, env_sched_link);
             count = 0;
