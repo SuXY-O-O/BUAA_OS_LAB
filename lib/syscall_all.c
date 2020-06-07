@@ -415,7 +415,7 @@ int sys_ipc_can_send(int sysno, u_int envid, u_int value, u_int srcva,
 }
 
 // lab6-extra
-int
+/*int
 sys_init_PV_var(int sys, int init_value)
 {
 	struct Pv *p;
@@ -495,5 +495,88 @@ sys_release_PV_var(int sys, int pv_id)
 		envid2env(id, &e, 0);
 		e->env_status = ENV_FREE;
 		i = (i++) % PVWAITNUM;
+	}
+}*/
+int
+sys_init_PV_var(int sysno,int init_value){
+	struct PV *p;
+	int r = mkPVid();
+	if(r > 1024){
+		return -1;
+	}
+	int rr;
+	if((rr = PVid2PV(r,&p))!=0){
+		return -1;
+	}
+//	printf("%d\n",r);
+	p->PV_id = r;
+	p->PV_alloc = 1;
+	p->PV_value = init_value;
+	LIST_INIT(&(p->PV_wait_list));
+	return p->PV_id;
+}
+
+void
+sys_P(int sysno,int pv_id){
+	struct PV *p;
+	int r;
+	if((r = PVid2PV(pv_id,&p))!=0){
+		return;
+	}
+	if(p->PV_alloc == 0){
+		return;
+	}
+//	printf("syscall_P:success\n");
+	p->PV_value--;
+	if(p->PV_value<0){
+		curenv->env_status = ENV_NOT_RUNNABLE;
+		LIST_INSERT_TAIL(&(p->PV_wait_list),curenv,PV_wait_link);
+		sys_yield();
+	}
+}
+void
+sys_V(int sysno,int pv_id){
+	struct PV *p;
+	int r;
+	if((r = PVid2PV(pv_id,&p))!=0){
+		return;
+	}
+	if(p->PV_alloc ==0){
+		return;
+	}
+//	printf("syscall_V:success\n");
+	p->PV_value++;
+	if(p->PV_value <= 0){
+		struct Env *e;
+		e = LIST_FIRST(&(p->PV_wait_list));
+		e->env_status = ENV_RUNNABLE;
+		LIST_REMOVE(e,PV_wait_link);
+		sys_yield();
+	}
+}
+int 
+sys_check_PV_value(int sysno,int pv_id){
+	struct PV *p;
+	int r;
+	if((r =PVid2PV(pv_id,&p))!=0){
+		return -1;
+	}
+	if(p->PV_alloc == 0){
+		return -1;
+	}
+	return p->PV_value;
+}
+void
+sys_release_PV_var(int sysno,int pv_id){
+	struct PV *p;
+	int r;
+	if((r = PVid2PV(pv_id,&p))!=0){
+		return;
+	}
+	p->PV_alloc = 0;
+	struct Env *e;
+	LIST_FOREACH((e),&(p->PV_wait_list),PV_wait_link){
+		env_free(e);
+//		sys_yield();
 	}
 }

@@ -42,6 +42,9 @@ struct Env {
 	// Lab 6 scheduler counts
 	u_int env_runs;			// number of times been env_run'ed
 	u_int env_nop;                  // align to avoid mul instruction
+    
+    //lab6-extra
+    LIST_ENTRY(Env) PV_wait_link;
 };
 
 LIST_HEAD(Env_list, Env);
@@ -82,7 +85,7 @@ void env_run(struct Env *e);
 }
 
 // lab6-extra
-#define PVWAITNUM 	15
+/*#define PVWAITNUM 	15
 #define PVMAX 		10
 #define PV_FREE 	1
 #define PV_USING	2
@@ -99,6 +102,14 @@ struct Pv {
 int get_new_pv(struct Pv **p);
 int pvid2pv(int pv_id, struct Pv **p);
 extern struct Pv *pv;
-LIST_HEAD(Pv_list, Pv);
+LIST_HEAD(Pv_list, Pv);*/
+struct PV {
+    int PV_id;      //signal`s id
+    int PV_value; //signal`s value
+    int PV_alloc; //signal is alloced?
+    struct Env_list PV_wait_list; //block list
+};
+int mkPVid();
+int PVid2PV(int PV_id,struct PV **p);
 
 #endif // !_ENV_H_

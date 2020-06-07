@@ -16,10 +16,11 @@ static struct Env_list env_free_list;    // Free list
 struct Env_list env_sched_list[2];      // Runnable list
 
 // lab6-extra
-struct Pv_list pv_free;
-struct Pv_list pv_using;
-struct Pv *pv;
+//struct Pv_list pv_free;
+//struct Pv_list pv_using;
+//struct Pv *pv;
 //struct Pv pvs[PVMAX];
+struct PV pvs[1024]; // All pvs
 
 
 extern Pde *boot_pgdir;
@@ -104,34 +105,18 @@ int envid2env(u_int envid, struct Env **penv, int checkperm)
     return 0;
 }
 // lab6-extra
-int get_new_pv(struct Pv **p) 
-{
-    static int count = 0;
-    count++;
-    if (LIST_EMPTY(&pv_free))
-        return -1;
-    *p = LIST_FIRST(&pv_free);
-    LIST_REMOVE(*p, pv_free_link);
-    LIST_INSERT_TAIL(&pv_using, *p, pv_using_link);
-    return count;
+int mkPVid(){
+	static u_long next_PV_id = 0;
+	return ++next_PV_id;
 }
 
-int pvid2pv(int pv_id, struct Pv **p)
+int PVid2PV(int PV_id,struct PV **p)
 {
-    int fount = 0;
-    struct Pv *tmp;
-    LIST_FOREACH(tmp, &pv_using, pv_using_link)
-    {
-        if (tmp->pv_id == pv_id)
-        {
-            fount = 1;
-            break;
-        }
-    }
-    if (fount == 0)
-        return -1;
-    *p = tmp;
-    return 0;
+	struct PV *e;
+	int r = (PV_id-1);
+	e = &pvs[r];
+	*p = e;
+	return 0;
 }
 /* Overview:
  *  Mark all environments in 'envs' as free and insert them into the env_free_list.
@@ -162,12 +147,12 @@ env_init(void)
     }
     
         // lab6-extra
-    LIST_INIT(&pv_free);
+    /*LIST_INIT(&pv_free);
     LIST_INIT(&pv_using);
     for (i = 0; i < PVMAX; i++)
     {
         LIST_INSERT_TAIL(&pv_free, (pv + i), pv_free_link);
-    }
+    }*/
 
 }
 

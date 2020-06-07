@@ -4,7 +4,7 @@
 void umain()
 {
 	int a = 0;
-	/*int id = 0;
+	int id = 0;
 
 	if ((id = fork()) == 0) {
 		if ((id = fork()) == 0) {
@@ -26,11 +26,5 @@ void umain()
 
 	for (;;) {
 		writef("this is father: a:%d\n", a);
-	}*/
-	syscall_init_PV_var(1);
-	while(a < 10) {
-		syscall_P(1);
-		writef("a %d \n", a);
-		a++;
 	}
 }
