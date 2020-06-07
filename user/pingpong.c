@@ -30,7 +30,7 @@ umain(void)
 		if (i == 10)
 			return;
 	}*/
-	empty = syscall_init_PV_var(1);
+	empty = syscall_init_PV_var(2);
 	full = syscall_init_PV_var(0);
 	mutex = syscall_init_PV_var(1);
 	writef("empty: %d;full: %d;mutex: %d\n", empty, full, mutex);
@@ -49,9 +49,12 @@ umain(void)
   //syscall_P(full);
  } else {
   int j = 0;
-     writef("father begin\n");
+     //writef("father begin\n");
   for (j = 0; j < 10; j++) {
+      writef("mutex %x\n", &mutex);
    syscall_P(full);
+      //writef("father back\n");
+      writef("mutex %x\n", &mutex);
    syscall_P(mutex);
       writef("checking\n");
       //user_panic("???\n");

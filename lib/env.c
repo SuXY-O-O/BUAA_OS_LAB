@@ -19,6 +19,7 @@ struct Env_list env_sched_list[2];      // Runnable list
 struct Pv_list pv_free;
 struct Pv_list pv_using;
 struct Pv *pv;
+//struct Pv pvs[PVMAX];
 
 
 extern Pde *boot_pgdir;
@@ -102,7 +103,36 @@ int envid2env(u_int envid, struct Env **penv, int checkperm)
     *penv = e;
     return 0;
 }
+// lab6-extra
+int get_new_pv(struct Pv **p) 
+{
+    static int count = 0;
+    count++;
+    if (LIST_EMPTY(&pv_free))
+        return -1;
+    *p = LIST_FIRST(&pv_free);
+    LIST_REMOVE(*p, pv_free_link);
+    LIST_INSERT_TAIL(&pv_using, *p, pv_using_link);
+    return count;
+}
 
+int pvid2pv(int pv_id, struct Pv **p)
+{
+    int fount = 0;
+    struct Pv *tmp;
+    LIST_FOREACH(tmp, &pv_using, pv_using_link)
+    {
+        if (tmp->pv_id == pv_id)
+        {
+            fount = 1;
+            break;
+        }
+    }
+    if (fount == 0)
+        return -1;
+    *p = tmp;
+    return 0;
+}
 /* Overview:
  *  Mark all environments in 'envs' as free and insert them into the env_free_list.
  *  Insert in reverse order,so that the first call to env_alloc() returns envs[0].

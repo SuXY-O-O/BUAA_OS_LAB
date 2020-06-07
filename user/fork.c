@@ -123,20 +123,18 @@ duppage(u_int envid, u_int pn)
 {
 	u_int addr;
 	u_int perm;
-
-   addr = pn * BY2PG;
-	perm = (*vpt)[pn] & 0xfff;
-	if (!(perm & PTE_V))
-		return;
-	if (perm & PTE_R)
-		perm |= PTE_COW;
-	if (perm & PTE_LIBRARY)
-		perm = perm | PTE_R;
-	if (syscall_mem_map(0, addr, envid, addr, perm) != 0)
-		user_panic("error duplicate child\n");
-	if (syscall_mem_map(0, addr, 0, addr, perm) != 0)
-		user_panic("error rewrite father perm\n");
 	
+	perm = (* vpt)[pn]&0xfff; //virtual page table
+	if((perm & PTE_V) == 0){
+		return;
+	}
+	addr = pn*BY2PG;
+	if((perm & PTE_R) != 0 && ((perm & PTE_LIBRARY) == 0)){
+		syscall_mem_map(0,addr,envid,addr,perm|PTE_COW);
+		syscall_mem_map(0,addr,0,addr,perm|PTE_COW);
+	}else{
+		syscall_mem_map(0,addr,envid,addr,perm);
+	}
 	//	user_panic("duppage not implemented");
 }
 
@@ -158,31 +156,31 @@ fork(void)
 	u_int newenvid;
 	extern struct Env *envs;
 	extern struct Env *env;
-	u_int i;
-   //user_panic("fork\n");
-	//The parent installs pgfault using set_pgfault_handler
-   set_pgfault_handler(pgfault);
-	//alloc a new alloc
-   newenvid = syscall_env_alloc();
-	if (newenvid == 0) // is child
-	{
-		newenvid = syscall_getenvid();
-		env = &(envs[ENVX(newenvid)]);
-		return 0;
-	}
-	else // is father
-	{
-		for (i = 0; i < USTACKTOP; i += BY2PG)
-			if ((*vpd)[i >> 22] & PTE_V)
-				duppage(newenvid, i >> 12);
-		if ((syscall_mem_alloc(newenvid, UXSTACKTOP - BY2PG, PTE_V | PTE_R)) != 0)
-			user_panic("fork - set pgfault page for child fail\n");
-		if ((syscall_set_pgfault_handler(newenvid, __asm_pgfault_handler, UXSTACKTOP)) != 0)
-			user_panic("fork - set pgfault handler for child fail\n");
-		if ((syscall_set_env_status(newenvid, ENV_RUNNABLE)) != 0)
-			user_panic("fork - set env status for child fail\n");
-	}
-
+	u_int i,j;
+	//writef("in fork\n");
+	set_pgfault_handler(pgfault);
+	newenvid = syscall_env_alloc();
+	if(newenvid == 0){
+		env = envs + ENVX(syscall_getenvid());
+	}else{
+		/*for(i = 0;i < USTACKTOP; i += BY2PG){
+			if(((*vpd)[VPN(i)/1024]) != 0 && ((*vpt)[VPN(i)]) != 0){
+				duppage(newenvid,VPN(i));
+			}
+		}*/
+		for(i=0;i<USTACKTOP;i+=PDMAP){
+			if((*vpd)[PDX(i)]){
+				for(j=0;j<PDMAP&&i+j<USTACKTOP;j+=BY2PG){
+					if((*vpt)[VPN(i+j)]){
+						duppage(newenvid,VPN(i+j));
+					}
+				}
+			}
+		}
+		syscall_mem_alloc(newenvid,UXSTACKTOP-BY2PG,PTE_V|PTE_R);
+        syscall_set_pgfault_handler(newenvid,__asm_pgfault_handler,UXSTACKTOP);
+        syscall_set_env_status(newenvid,ENV_RUNNABLE);
+    }
 	return newenvid;
 }
 
