@@ -20,7 +20,7 @@ struct Env_list env_sched_list[2];      // Runnable list
 //struct Pv_list pv_using;
 //struct Pv *pv;
 //struct Pv pvs[PVMAX];
-struct PV pvs[1024]; // All pvs
+struct PV *pvs; // All pvs
 
 
 extern Pde *boot_pgdir;

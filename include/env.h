@@ -111,5 +111,6 @@ struct PV {
 };
 int mkPVid();
 int PVid2PV(int PV_id,struct PV **p);
+extern struct PV *pvs;
 
 #endif // !_ENV_H_
